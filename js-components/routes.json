@@ -1,0 +1,9 @@
+{
+    "home": {
+        "instant": ["storage.js"],
+        "onload": ["home-onload"]
+    },
+    "about": {
+        "onload": ["about"]
+    }
+}

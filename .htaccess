@@ -1,0 +1,6 @@
+FallbackResource index.php
+
+RewriteEngine On
+
+# Rewrites everything to root index.php
+RewriteRule ^(.*)$ "index.php"

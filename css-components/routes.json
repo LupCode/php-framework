@@ -1,0 +1,4 @@
+{
+    "home": ["default", "header", "home", "footer"],
+    "contact": ["default", "header", "about", "footer"],
+}
