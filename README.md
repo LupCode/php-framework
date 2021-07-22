@@ -49,17 +49,17 @@ where the keyword `IMAGES` will get replaced with the relative path to the `imag
 append your path as if you were inside the `images/` directory.
 For  example `<?php echo IMAGES.'backgrounds/start-background.jpg'; ?>`
 
-### `downloads/`
+#### `downloads/`
 Put here other static files that are not CSS nor Javascript files. You can 
 reference files in your code the following `<?php echo DOWNLOADS.'<pathInsideDownloadsDir>'; ?>`.
 For  example `<?php echo DOWNLOADS.'manuals/de.pdf'; ?>`
 
-### `sitemap.php`
+#### `sitemap.php`
 The `sitemap.php` file automatically generates and updates a `sitemap.xml` file. 
 Simply define the individual URLs of your website at the top of the `sitemap.php`. 
 Language code prefixes will be automatically added to the URLs.
 
-### `.env`
+#### `.env`
 Contains environment variables that get loaded for every request and can be accessed either by referecing with `$_ENV`
 or by calling `getenv()`. 
 Secrets that should never be exposed must be defined as environment variables such as credentials for database for example.
