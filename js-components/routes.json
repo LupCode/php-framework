@@ -1,9 +1,9 @@
 {
-    "home": {
+    "home.js": {
         "instant": ["storage.js"],
-        "onload": ["home-onload"]
+        "onload": ["home-onload.js"]
     },
-    "about": {
-        "onload": ["about"]
+    "about.js": {
+        "onload": ["about-onload.jd"]
     }
 }

@@ -1,4 +1,4 @@
 {
-    "home": ["default", "header", "home", "footer"],
-    "contact": ["default", "header", "about", "footer"],
+    "home.css": ["default.css", "header.css", "home.css", "footer.css"],
+    "contact.css": ["default.css", "header.css", "about.css", "footer.css"]
 }
