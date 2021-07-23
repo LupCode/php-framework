@@ -21,7 +21,8 @@ define('SITEMAP_FILE', 'sitemap.xml');
 define('NOT_FOUND_PAGE', 'error/');
 
 
-
+/** Path from this framework root to the favicon file that should be returned if browser requests the favicon */
+define('FAVICON_FILE', 'images/favicons/favicon.ico');
 
 
 define('_CSS', 'css/'); // just defines the location, do not reference in your code
@@ -36,6 +37,8 @@ define('_TRANSLATIONS', 'translations/'); // just defines the location, do not r
 define('_ENVIRONMENT_FILE', '.env'); // just defines the location, do not reference in your code
 
 
+/** If the URL ends with a directory following files will be search inside the requested directory otherwise 404 will be returned */
+define('DEFAULT_INDEX_FILES', ['index.php', 'index.html']);
 
 
 
@@ -52,6 +55,22 @@ if(($handle = fopen(_ENVIRONMENT_FILE, "r"))){
 		putenv($line);
 	}
 	fclose($handle);
+}
+
+// polyfill function str_starts_with($haystack, $needle): bool
+if(!function_exists("str_starts_with")){
+	function str_starts_with($haystack, $needle){
+		if(!is_string($haystack) || !is_string($needle)) return false;
+		return substr($haystack, 0, min(strlen($haystack), strlen($needle))) === $needle;
+	}
+}
+
+// polyfill function str_ends_with($haystack, $needle): bool
+if(!function_exists("str_ends_with")){
+	function str_ends_with($haystack, $needle){
+		if(!is_string($haystack) || !is_string($needle)) return false;
+		return substr($haystack, max(0, strlen($haystack)-strlen($needle))) === $needle;
+	}
 }
 
 /**
@@ -101,10 +120,66 @@ define('REQUEST', ($fullRequestLen < $langLen || strtolower(substr(FULL_REQUEST,
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
 
+/**
+ * Function takes the path of a file from framework root, sets appropiate headers, 
+ * echos the contents of the file and exits the execution of the script. 
+ * If file does not exist the NOT_FOUND_PAGE will be used if defined otherwise responds with 404 error. 
+ * @param String $file Path to the file
+ */
+function respondWithFile($file, $isAlreadyNotFound=false){
+	// safety checks
+	$realFile = ($file ? realpath($file) : ''); $realRoot = realpath(__DIR__);
+	if(!$file || !file_exists($file) || strlen($realFile) < strlen($realRoot) || !str_starts_with($realFile, $realRoot)){
+		if($isAlreadyNotFound || !NOT_FOUND_PAGE || empty(NOT_FOUND_PAGE)){
+			header("HTTP/1.0 404 Not Foun", true, 404);
+			exit(0);
+		}
+		respondWithFile(_VIEWS.NOT_FOUND_PAGE, true);
+	}
+
+	// if path is directory search inside directory
+	if(is_dir($file)){
+		$notFound = true;
+		foreach(DEFAULT_INDEX_FILES as $indexName){
+			$path = $file.($file[strlen($file)-1] !== '/' ? '/' : '').$indexName;
+			if(file_exists($path)){
+				$file = $path;
+				$notFound = false;
+				break;
+			}
+		}
+		if($notFound) respondWithFile(null);
+	}
+
+	// execute PHP files
+	if(str_ends_with($file, '.php')){
+		include($file);
+		exit(0);
+	}
+
+	// return contents of file
+	$mimeType = mime_content_type($file);
+	header('Content-Type: '.($mimeType ? $mimeType : 'text/html'), true);
+	echo file_get_contents($file);
+	exit(0);
+}
+
+// process CSS files
+if(str_starts_with(REQUEST, _CSS)){
+	$request = substr(REQUEST, strlen(_CSS));
+	$routes = json_decode(file_get_contents(_CSS_COMPONENTS.'routes.json'), true);
+	if(!isset($routes[$request])){ respondWithFile(_CSS.$request); }
+
+	// TODO BUILD CSS OUT OF COMPONENTS
+}
+
+
+
 
 // TODO HANDLE _CSS
 // TODO HANDLE _IMAGES
 // TODO HANDLE _JS
+// TODO HANDLE _DOWNLOADS
 
 // TODO .env
 
@@ -113,5 +188,8 @@ define('REQUEST', ($fullRequestLen < $langLen || strtolower(substr(FULL_REQUEST,
 // TODO HANDLE favicon
 
 // TODO handle if not found and NOT_FOUND_PAGE is defined
+
+
+respondWithFile(REQUEST);
 
 ?>
