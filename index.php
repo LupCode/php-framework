@@ -1,18 +1,14 @@
 <?php
 
-
 // ---------------------------------------------------------------------------------------
 // CONFIG
 // ---------------------------------------------------------------------------------------
 
 define('DEFAULT_LANGUAGE_CODE', 'en');
-define('LANGUAGE_COOKIE', 'lang'); // name of cookie to store users last visited language (empty or false to disable)
 
-/** 
- * URL of sitemap that will be generated (should not be changed as this is standard)
- * Further settings of sitemap can be found in sitemap.php
- */
-define('SITEMAP_FILE', 'sitemap.xml');
+define('LANGUAGE_COOKIE_NAME', 'L'); // name of cookie to store users last visited language (empty or false to disable)
+define('LANGUAGE_COOKIE_EXPIRE_SEC', 5184000); // 60 days
+define('LANGUAGE_COOKIE_DOMAIN', $_SERVER['SERVER_NAME']);
 
 /**
  * Path inside views directory that will be called if a requested URL was not found instead of throwing a 404 error.
@@ -21,20 +17,28 @@ define('SITEMAP_FILE', 'sitemap.xml');
 define('NOT_FOUND_PAGE', 'error/');
 
 
-/** Path from this framework root to the favicon file that should be returned if browser requests the favicon */
+/**
+ * Path from this framework root to the favicon file that should be returned if browser requests the favicon.
+ * If empty or false the favicon will be looked up in the views folder 'views/favicon.ico'
+ */
 define('FAVICON_FILE', 'images/favicons/favicon.ico');
 
 
-define('_CSS', 'css/'); // just defines the location, do not reference in your code
-define('_CSS_COMPONENTS', 'css-components/'); // just defines the location, do not reference in your code
-define('_DOWNLOADS', 'downloads/'); // just defines the location, do not reference in your code
-define('_IMAGES', 'images/'); // just defines the location, do not reference in your code
-define('_JS', 'js/'); // just defines the location, do not reference in your code
-define('_JS_COMPONENTS', 'js-components/'); // just defines the location, do not reference in your code
-define('_VIEWS', 'views/'); // just defines the location, do not reference in your code
-define('_SCRIPTS', 'scripts/'); // just defines the location, do not reference in your code
-define('_TRANSLATIONS', 'translations/'); // just defines the location, do not reference in your code
-define('_ENVIRONMENT_FILE', '.env'); // just defines the location, do not reference in your code
+// Constants defining paths to publicly accessible, static filse.
+// Do not directly use in your code but instead without the underscore at the beginning '_'
+// e.g. echo '<link rel="stylesheet" type="text/css" href="'.CSS.'about.css" />';
+define('_CSS', 'css/');
+define('_JS', 'js/');
+define('_IMAGES', 'images/');
+define('_DOWNLOADS', 'downloads/');
+
+// Constants defining paths to private files that can only be accessed with include() or require_once()
+define('SCRIPTS', 'scripts/');
+define('TRANSLATIONS', 'translations/');
+define('CSS_COMPONENTS', 'css-components/');
+define('JS_COMPONENTS', 'js-components/');
+define('VIEWS', 'views/');
+define('ENVIRONMENT_FILE', '.env');
 
 
 /** If the URL ends with a directory following files will be search inside the requested directory otherwise 404 will be returned */
@@ -47,7 +51,7 @@ define('DEFAULT_INDEX_FILES', ['index.php', 'index.html']);
 // ---------------------------------------------------------------------------------------
 
 // Load environment variables
-if(($handle = fopen(_ENVIRONMENT_FILE, "r"))){
+if(($handle = fopen(ENVIRONMENT_FILE, "r"))){
 	while(($line = fgets($handle)) !== false){
 		$idx = strpos($line, "=");
 		if($idx < 0) continue;
@@ -73,20 +77,15 @@ if(!function_exists("str_ends_with")){
 	}
 }
 
-/**
- * @return Array Array containing all supported language codes base on the translation files
- */
-function getSupportedLanguages(){
-	if(isset($GLOBALS['_SUPPORTED_LANGUAGES'])) return $GLOBALS['_SUPPORTED_LANGUAGES'];
-	$arr = array();
-	foreach(scandir(_TRANSLATIONS) as $file){
-		if($file === "." || $file === ".." || $file === "globals.json") continue;
-		$idx = strrpos($file, ".");
-		array_push($arr, $idx < 0 ? $file : substr($file, 0, $idx));
-	}
-	$GLOBALS['_SUPPORTED_LANGUAGES'] = $arr;
-	return $arr;
+
+// detect supported languages
+$arr = array();
+foreach(scandir(TRANSLATIONS) as $file){
+	if($file === "." || $file === ".." || $file === "globals.json" || !str_ends_with($file, '.json')) continue;
+	array_push($arr, substr($file, 0, -5));
 }
+define('SUPPORTED_LANGUAGES', $arr);
+
 
 /**
  * Converts a given language code into a supported language code or false if no matches found
@@ -95,30 +94,31 @@ function getSupportedLanguages(){
  */
 function toSupportedLanguage($code){
 	if(!$code || !is_string($code)) return false;
-	$supported = getSupportedLanguages();
 	$len = strlen($code);
-	if(in_array($code, $supported)) return $code;
+	if(in_array($code, SUPPORTED_LANGUAGES)) return $code;
 	if($len <= 2) return false;
 	$code = substr($code, 0, 2);
-	return in_array($code, $supported) ? $code : false;
+	return in_array($code, SUPPORTED_LANGUAGES) ? $code : false;
 }
 
 // Trim to actual request
 $base = substr($_SERVER['SCRIPT_NAME'], 0, -strlen(basename($_SERVER['SCRIPT_NAME'])));
-define('FULL_REQUEST', substr($_SERVER['REQUEST_URI'], strlen($base)));
+$requestWithQuery = substr($_SERVER['REQUEST_URI'], strlen($base));
+$len = strlen($_SERVER['QUERY_STRING']);
+define('FULL_REQUEST', (!$len && !empty($requestWithQuery) && $requestWithQuery[-1] !== '?') ? $requestWithQuery : substr($requestWithQuery, 0, -($len+1)));
 $fullRequestLen = strlen(FULL_REQUEST);
 
 // Detect language
 $lang = false;
+$useLangCookie = (LANGUAGE_COOKIE_NAME && !empty(LANGUAGE_COOKIE_NAME)); 
 $idx = strpos(FULL_REQUEST, '/');
 if($idx > 0) $lang = toSupportedLanguage(substr(FULL_REQUEST, 0, $idx));
-if(!$lang && LANGUAGE_COOKIE && !empty(LANGUAGE_COOKIE) && isset($_COOKIE[LANGUAGE_COOKIE])) $lang = toSupportedLanguage($_COOKIE[LANGUAGE_COOKIE]);
+if(!$lang && $useLangCookie && isset($_COOKIE[LANGUAGE_COOKIE_NAME])) $lang = toSupportedLanguage($_COOKIE[LANGUAGE_COOKIE_NAME]);
+if(!$lang) $lang = toSupportedLanguage($_SERVER['HTTP_ACCEPT_LANGUAGE']);
 define('LANGUAGE_CODE', $lang ? $lang : DEFAULT_LANGUAGE_CODE);
+if($useLangCookie) setcookie(LANGUAGE_COOKIE_NAME, LANGUAGE_CODE, (LANGUAGE_COOKIE_EXPIRE_SEC > 0 ? time()+LANGUAGE_COOKIE_EXPIRE_SEC : 0), '/', LANGUAGE_COOKIE_DOMAIN);
 $langLen = strlen(LANGUAGE_CODE);
 define('REQUEST', ($fullRequestLen < $langLen || strtolower(substr(FULL_REQUEST, 0, $langLen)) != $lang) ? FULL_REQUEST : substr(FULL_REQUEST, $langLen+1));
-
-// ---------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------
 
 /**
  * Function takes the path of a file from framework root, sets appropiate headers, 
@@ -130,29 +130,44 @@ function respondWithFile($file, $isAlreadyNotFound=false){
 	// safety checks
 	$realFile = ($file ? realpath($file) : ''); $realRoot = realpath(__DIR__);
 	if(!$file || !file_exists($file) || strlen($realFile) < strlen($realRoot) || !str_starts_with($realFile, $realRoot)){
-		if($isAlreadyNotFound || !NOT_FOUND_PAGE || empty(NOT_FOUND_PAGE)){
-			header("HTTP/1.0 404 Not Foun", true, 404);
-			exit(0);
-		}
-		respondWithFile(_VIEWS.NOT_FOUND_PAGE, true);
+		header("HTTP/1.0 404 Not Found", true, 404); // signal search engines that page is an error page
+		if($isAlreadyNotFound || !NOT_FOUND_PAGE || empty(NOT_FOUND_PAGE)) exit();
+		respondWithFile(VIEWS.NOT_FOUND_PAGE, true);
 	}
 
 	// if path is directory search inside directory
+	$add = 0;
 	if(is_dir($file)){
 		$notFound = true;
+		$needSlash = (empty($file) || $file[-1] !== '/');
+		$add += ($needSlash && !$isAlreadyNotFound);
+		$dir = $file.($needSlash ? '/' : '');
 		foreach(DEFAULT_INDEX_FILES as $indexName){
-			$path = $file.($file[strlen($file)-1] !== '/' ? '/' : '').$indexName;
+			$path = $dir.$indexName;
 			if(file_exists($path)){
 				$file = $path;
 				$notFound = false;
 				break;
 			}
 		}
-		if($notFound) respondWithFile(null);
+		if($notFound) respondWithFile(null, $isAlreadyNotFound);
 	}
 
 	// execute PHP files
 	if(str_ends_with($file, '.php')){
+		// load language files, define constants and include config
+		$globals = json_decode(file_get_contents(TRANSLATIONS.'globals.json'), true);
+		$trans = json_decode(file_get_contents(TRANSLATIONS.LANGUAGE_CODE.'.json'), true);
+		define('TEXT', array_merge((is_array($globals) ? $globals : array()), (is_array($trans) ? $trans : array())));
+		define('ROOT_DEPTH', substr_count(FULL_REQUEST, "/")+$add);
+		define('BASE_DEPTH', substr_count(REQUEST, "/")+$add);
+		define('BASE', str_repeat('../', BASE_DEPTH));
+		define('ROOT', BASE.(ROOT_DEPTH != BASE_DEPTH ? '../' : ''));
+		define('CSS', ROOT._CSS);
+		define('JS', ROOT._JS);
+		define('IMAGES', ROOT._IMAGES);
+		define('DOWNLOADS', ROOT._DOWNLOADS);
+		require_once('config.php');
 		include($file);
 		exit(0);
 	}
@@ -163,6 +178,7 @@ function respondWithFile($file, $isAlreadyNotFound=false){
 	echo file_get_contents($file);
 	exit(0);
 }
+
 
 // process CSS files
 if(str_starts_with(REQUEST, _CSS)){
@@ -185,11 +201,11 @@ if(str_starts_with(REQUEST, _CSS)){
 
 // TODO HANDLE sitemap.
 
-// TODO HANDLE favicon
+// TODO HANDLE favicon (if not defined views/favicon.ico)
 
 // TODO handle if not found and NOT_FOUND_PAGE is defined
 
 
-respondWithFile(REQUEST);
+respondWithFile(VIEWS.REQUEST);
 
 ?>

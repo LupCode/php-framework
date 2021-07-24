@@ -2,7 +2,7 @@
 
 
 /**
- * Signals that page should not be cached at all
+ * Signals via headers that page should not be cached at all
  */
 function noCache(){
 	header('Expires: '.date("D, d M Y H:i:s").' GMT', true);
@@ -12,7 +12,7 @@ function noCache(){
 
 
 /**
- * Signals that the page should be cached for a certain amount of seconds
+ * Signals via headers that the page should be cached for a certain amount of seconds
  * @param int $seconds Seconds how long the page should be cached
  * @param bool $private If true only the client is allowed to cached, proxies not (default false) 
  */
@@ -23,7 +23,7 @@ function setCache($seconds=0, $private=false){
 
 
 /**
- * Signals that the page should be cached until a given UTC time in seconds
+ * Signals via headers that the page should be cached until a given UTC time in seconds
  * @param int $timeUTCSec UTC time in seconds until page should be cached
  * @param bool $private If true only the client is allowed to cached, proxies not (default false) 
  */
@@ -32,7 +32,7 @@ function setCacheUntil($timeUTCSec, $private=false){
 }
 
 /**
- * Signals that the page should be cached until the next full given unit (e.g. until the next full hour)
+ * Signals via headers that the page should be cached until the next full given unit (e.g. until the next full hour)
  * @param int $unitSeconds Seconds defining the unit interval (e.g. 3600 for hourly)
  * @param bool $private If true only the client is allowed to cached, proxies not (default false) 
  */

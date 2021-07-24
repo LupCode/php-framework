@@ -8,9 +8,6 @@
     "languageNamePO": "Polskie",
     "languageNameRU": "русский",
 
-    "keywordsStartEN": "Start,Framework,PHP,LupCode",
-    "keywordsStartDE": "Start,Framework,PHP,LupCode",
-
-    "keywordsAboutEN": "About,Welcome,LupCode",
-    "keywordsAboutDE": "Über,Willkommen,LupCode"
+    "pageKeywordsStartEN": "Start,Framework,PHP,LupCode",
+    "pageKeywordsStartDE": "Start,Framework,PHP,LupCode"
 }
