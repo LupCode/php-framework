@@ -4,11 +4,9 @@
 // CONFIG
 // ---------------------------------------------------------------------------------------
 
+/** Default language code used if requested language not supported */
 define('DEFAULT_LANGUAGE_CODE', 'en');
 
-define('LANGUAGE_COOKIE_NAME', 'L'); // name of cookie to store users last visited language (empty or false to disable)
-define('LANGUAGE_COOKIE_EXPIRE_SEC', 5184000); // 60 days
-define('LANGUAGE_COOKIE_DOMAIN', $_SERVER['SERVER_NAME']);
 
 /**
  * Path inside views directory that will be called if a requested URL was not found instead of throwing a 404 error.
@@ -21,28 +19,65 @@ define('NOT_FOUND_PAGE', 'error/');
  * Path from this framework root to the favicon file that should be returned if browser requests the favicon.
  * If empty or false the favicon will be looked up in the views folder 'views/favicon.ico'
  */
-define('FAVICON_FILE', 'images/favicons/favicon.ico');
+define('FAVICON_FILE', 'static/images/favicons/favicon.ico');
 
 
-// Constants defining paths to publicly accessible, static filse.
-// Do not directly use in your code but instead without the underscore at the beginning '_'
-// e.g. echo '<link rel="stylesheet" type="text/css" href="'.CSS.'about.css" />';
-define('_CSS', 'css/');
-define('_JS', 'js/');
-define('_IMAGES', 'images/');
-define('_DOWNLOADS', 'downloads/');
+// Cookie settings for remembering users language
+define('LANGUAGE_COOKIE_NAME', 'L'); // name of cookie to store users last visited language (empty or false to disable)
+define('LANGUAGE_COOKIE_EXPIRE_SEC', 5184000); // 60 days
+define('LANGUAGE_COOKIE_DOMAIN', $_SERVER['SERVER_NAME']); // domain at which the cookie is readable
+
+
+// Caching times (seconds) for specific files (0 to cache only for session, -1 to disable caching)
+define('IMAGES_CACHE_SECONDS', 604800); // 1 week caching of image files by the browser
+define('STATIC_CACHE_SECONDS', 604800); // 1 week caching of files inside the static directory by the browser
 
 // Constants defining paths to private files that can only be accessed with include() or require_once()
-define('SCRIPTS', 'scripts/');
-define('TRANSLATIONS', 'translations/');
 define('CSS_COMPONENTS', 'css-components/');
 define('JS_COMPONENTS', 'js-components/');
+define('SCRIPTS', 'scripts/');
+define('STATICS', 'static/');
+define('TRANSLATIONS', 'translations/');
 define('VIEWS', 'views/');
 define('ENVIRONMENT_FILE', '.env');
 
+// Name of CSS and JavaScript directory inside the 'static/' directory. Canno publicly be referenced. No trailing '/'
+define('_CSS', 'css');
+define('_JS', 'js');
+
+
+define('STATICS_CACHE_SECONDS', array(
+	'css' => 86400, // 1 day
+	'images' => 604800, // 1 week
+	'js' => 86400, // 1 day
+));
+
 
 /** If the URL ends with a directory following files will be search inside the requested directory otherwise 404 will be returned */
-define('DEFAULT_INDEX_FILES', ['index.php', 'index.html']);
+define('DEFAULT_INDEX_FILES', array('index.php', 'index.html'));
+
+
+/** File extensions to mime type needed for HTTP headers. If needed file extension not found then fallback to function mime_content_type() */
+define('FILE_EXTENSION_TO_MIME', array(
+	'css' => 'text/css',
+	'csv' => 'text/comma-separated-values',
+	'gif' => 'image/gif',
+	'htm' => 'text/html',
+	'html' => 'text/html',
+	'ico' => 'image/x-icon',
+	'jpeg' => 'image/jpeg',
+	'jpg' => 'image/jpeg',
+	'jpe' => 'image/jpeg',
+	'js' => 'text/javascript',
+	'json' => 'application/json',
+	'pdf' => 'application/pdf',
+	'png' => 'image/png',
+	'shtml' => 'text/html',
+	'svg' => 'image/svg+xml',
+	'txt' => 'text/plain',
+	'xhtml' => 'application/xhtml+xml',
+	'xml' => 'text/xml'
+));
 
 
 
@@ -59,6 +94,22 @@ if(($handle = fopen(ENVIRONMENT_FILE, "r"))){
 		putenv($line);
 	}
 	fclose($handle);
+}
+
+/**
+ * Takes a path to a file and returns the MIME type based on the file extension.
+ * Uses 'FILE_EXTENSION_TO_MIME' array but falls back to mime_content_type() if extenion not defined.
+ * @param String $file Path to file the MIME type should be returned for
+ * @return String MIME type of file
+ */
+function file_to_mime($file){
+	$idx = strrpos($file, '.');
+	if($idx !== false){
+		$ext = strtolower(substr($file, $idx+1));
+		if(isset(FILE_EXTENSION_TO_MIME[$ext])) return FILE_EXTENSION_TO_MIME[$ext];
+	}
+	$type = mime_content_type($file);
+	return $type ? $type : 'text/plain';
 }
 
 // polyfill function str_starts_with($haystack, $needle): bool
@@ -163,49 +214,44 @@ function respondWithFile($file, $isAlreadyNotFound=false){
 		define('BASE_DEPTH', substr_count(REQUEST, "/")+$add);
 		define('BASE', str_repeat('../', BASE_DEPTH));
 		define('ROOT', BASE.(ROOT_DEPTH != BASE_DEPTH ? '../' : ''));
-		define('CSS', ROOT._CSS);
-		define('JS', ROOT._JS);
-		define('IMAGES', ROOT._IMAGES);
-		define('DOWNLOADS', ROOT._DOWNLOADS);
+		foreach(scandir(STATICS) as $dir) if(is_dir($dir)) define(strtoupper($dir), ROOT.$dir.'/');
 		require_once('config.php');
 		include($file);
 		exit(0);
 	}
 
 	// return contents of file
-	$mimeType = mime_content_type($file);
-	header('Content-Type: '.($mimeType ? $mimeType : 'text/html'), true);
+	header('Content-Type: '.file_to_mime($file));
 	echo file_get_contents($file);
 	exit(0);
 }
 
 
-// process CSS files
-if(str_starts_with(REQUEST, _CSS)){
-	$request = substr(REQUEST, strlen(_CSS));
-	$routes = json_decode(file_get_contents(_CSS_COMPONENTS.'routes.json'), true);
-	if(!isset($routes[$request])){ respondWithFile(_CSS.$request); }
-
-	// TODO BUILD CSS OUT OF COMPONENTS
+// process requests starting with a subdirectory inside of statics/
+foreach(scandir(STATICS) as $dir){
+	if($dir === '.' || $dir === '..') continue;
+	if(str_starts_with(FULL_REQUEST, $dir)){
+		if(isset(STATICS_CACHE_SECONDS[$dir])){
+			require_once(SCRIPTS.'caching.php');
+			$cacheSec = STATICS_CACHE_SECONDS[$dir];
+			if($cacheSec >= 0) setCache($cacheSec); else noCache();
+		}
+		if($dir === _CSS) include(CSS_COMPONENTS.'css-config.php');
+		if($dir === _JS) include(JS_COMPONENTS.'js-config.php');
+		respondWithFile(STATICS.FULL_REQUEST);
+	}
 }
 
 
+// process favicon.ico
+if(FULL_REQUEST === 'favicon.ico') respondWithFile((FAVICON_FILE && !empty(FAVICON_FILE)) ? FAVICON_FILE : _VIEWS.'favicon.ico');
 
 
-// TODO HANDLE _CSS
-// TODO HANDLE _IMAGES
-// TODO HANDLE _JS
-// TODO HANDLE _DOWNLOADS
-
-// TODO .env
-
-// TODO HANDLE sitemap.
-
-// TODO HANDLE favicon (if not defined views/favicon.ico)
-
-// TODO handle if not found and NOT_FOUND_PAGE is defined
+// process sitemap.xml
+if(FULL_REQUEST === 'sitemap.xml') include('sitemap.php');
 
 
+// all other files including PHP files
 respondWithFile(VIEWS.REQUEST);
 
 ?>
