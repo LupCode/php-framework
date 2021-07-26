@@ -108,6 +108,7 @@ The framework also comes with some example files that can be deleted if wanted:
 * `js-components/default.js` and `js-components/start.js` are example JavaScript component files for the example start page
 * `scripts/metatags.php` Script containing generic HTML metatags that should be included in every page
 * `translations/en.json` and `translations/de.json` are two example translation files
+* `views/browserconfig.xml` File used by browsers to get metadata about the website
 * `views/index.php`, `views/start/` and `views/error/` are two example pages
 * `views/language-editor/` primitive editor to easily edit the translation files, however it is **not secure** and should not be deployed!
 * `views/manifest.json` File used by browsers to get metadata about the website

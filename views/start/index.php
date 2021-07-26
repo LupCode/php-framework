@@ -18,16 +18,24 @@ noCache();
 
         <!-- 
             'echo CSS' is the relative path to the 'static/css/' directory. 
-            'start.css' automatically gets generated as defined in 'css-components/css-config.php'
+            'start.css' gets automatically generated as defined in 'css-components/css-config.php'
         -->
         <link rel="stylesheet" href="<?php echo CSS; ?>start.css">
+
+        <!-- 
+            'echo JS' is the relative path to the 'static/js/' directory. 
+            'start.js' gets automatically generated as defined in 'js-components/js-config.php'
+        -->
+        <script type="text/javascript" src="<?php echo JS; ?>start.js"></script>
 
     </head>
     <body>
         <div class="content">
             <header>
                 <!-- 'echo IMAGES' is the relative path to the 'static/images/' directory -->
-                <img src="<?php echo IMAGES; ?>favicons/favicon.ico" dragable="false" width="35" height="35" alt="PHP"></img>
+                <a class="nodrag noselect" target="_blank" href="https://php.net">
+                    <img src="<?php echo IMAGES; ?>favicons/favicon.svg" dragable="false" width="35" height="35" alt="PHP"></img>
+                </a>
                 <h1 class="noselect nodrag"><?php echo TEXT['pageTitleStart']; ?></h1>
                 <div></div>
             </header>
