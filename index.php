@@ -28,10 +28,6 @@ define('LANGUAGE_COOKIE_EXPIRE_SEC', 5184000); // 60 days
 define('LANGUAGE_COOKIE_DOMAIN', $_SERVER['SERVER_NAME']); // domain at which the cookie is readable
 
 
-// Caching times (seconds) for specific files (0 to cache only for session, -1 to disable caching)
-define('IMAGES_CACHE_SECONDS', 604800); // 1 week caching of image files by the browser
-define('STATIC_CACHE_SECONDS', 604800); // 1 week caching of files inside the static directory by the browser
-
 // Constants defining paths to private files that can only be accessed with include() or require_once()
 define('CSS_COMPONENTS', 'css-components/');
 define('JS_COMPONENTS', 'js-components/');
@@ -46,6 +42,7 @@ define('_CSS', 'css');
 define('_JS', 'js');
 
 
+// Caching times (seconds) for specific subdirectories inside the 'static' directory (0 to cache only for session, -1 to disable caching)
 define('STATICS_CACHE_SECONDS', array(
 	'css' => 86400, // 1 day
 	'images' => 604800, // 1 week
