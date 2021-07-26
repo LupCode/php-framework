@@ -1,7 +1,11 @@
 :root {
-    --color-main: '#333';
+    --color-main: #333;
 
-    --background-main: '#fff';
+    --background-main: #fff;
+	--background-header: #ffa600;
+	--background-footer: #808080;
+
+	--font-text: sans-serif;
 }
 
 .noselect {
@@ -17,4 +21,13 @@
 	-moz-user-drag: none;
 	-o-user-drag: none;
 	user-drag: none;
+}
+
+html, body {
+	margin: 0px;
+	padding: 0px;
+
+	color: var(--color-main);
+	background-color: var(--background-main);
+	font-family: var(--font-text);
 }

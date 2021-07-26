@@ -214,7 +214,7 @@ function respondWithFile($file, $isAlreadyNotFound=false){
 		define('BASE_DEPTH', substr_count(REQUEST, "/")+$add);
 		define('BASE', str_repeat('../', BASE_DEPTH));
 		define('ROOT', BASE.(ROOT_DEPTH != BASE_DEPTH ? '../' : ''));
-		foreach(scandir(STATICS) as $dir) if(is_dir($dir)) define(strtoupper($dir), ROOT.$dir.'/');
+		foreach(scandir(STATICS) as $dir) if(is_dir(STATICS.$dir)) define(strtoupper($dir), ROOT.$dir.'/');
 		require_once('config.php');
 		include($file);
 		exit(0);

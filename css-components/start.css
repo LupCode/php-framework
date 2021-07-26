@@ -1,4 +1,100 @@
+.content, header, footer, .content .main {
+    display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+}
+
+.content {
+    justify-content: center;
+    align-items: stretch;
+
+    -webkit-flex-direction: column;
+	-moz-flex-direction: column;
+	flex-direction: column;
+
+    min-height: 100vh;
+}
+
+.content .main {
+    -webkit-flex: 1 1 auto;
+	-moz-flex: 1 1 auto;
+	-ms-flex: 1 1 auto;
+	flex: 1 1 auto;
+
+    justify-content: center;
+    align-items: center;
+
+    -webkit-flex-direction: column;
+	-moz-flex-direction: column;
+	flex-direction: column;
+
+    font-size: 1.2em;
+}
+
+header, footer {
+    -webkit-flex: 0 0 auto;
+	-moz-flex: 0 0 auto;
+	-ms-flex: 0 0 auto;
+	flex: 0 0 auto;
+
+    align-items: center;
+
+    -webkit-flex-direction: row;
+	-moz-flex-direction: row;
+	flex-direction: row;
+
+    -webkit-flex-wrap: wrap;
+	-moz-flex-wrap: wrap;
+	flex-wrap: wrap;
+
+    box-shadow: 0px 0px 0.25em rgba(0,0,0, 0.75);
+}
+
 header {
-    display: block;
-    width: 100%;
+    justify-content: center;
+
+    color: var(--background-main);
+    background-color: var(--background-header);
+}
+header img, header div {
+    -webkit-flex: 0 1 auto;
+	-moz-flex: 0 1 auto;
+	-ms-flex: 0 1 auto;
+	flex: 0 1 auto;
+}
+header img {
+    width: 35px;
+    height: 35px;
+    margin: 10px;
+}
+header div {
+    width: 55px;
+    height: 0px;
+}
+header h1 {
+    -webkit-flex: 1 1 auto;
+	-moz-flex: 1 1 auto;
+	-ms-flex: 1 1 auto;
+	flex: 1 1 auto;
+
+    margin: 10px;
+    text-align: center;
+}
+
+footer {
+    justify-content: space-around;
+
+    color: var(--background-main);
+    background-color: var(--background-footer);
+    font-size: 1.1em;
+}
+footer a {
+    display: inline-block;
+    color: inherit;
+    padding: 0.5em;
+}
+
+p {
+    padding: 0.5em;
 }

@@ -1,5 +1,6 @@
 {
     "languageName": "Deutsch",
+    "pageTitleStart": "PHP-Framework von LupCode",
     "pageDescriptionError": "Die angeforderte Resource konnte nicht gefunden werden",
-    "pageDescriptionStart": "Startseite dieses Frameworks, welches von LupCode entwickelt wurde"
+    "pageDescriptionStart": "Beispiel-Startseite dieses von LupCode entwickelten Frameworks"
 }
