@@ -13,7 +13,7 @@ In the following is described how to build a website with this framework:
 The config file gets included before the execution of any PHP file inside the `views` directory. 
 The idea is to define your custom constants/variables inside of it. 
 However credentials should be placed in the `.env` file for security reasons.
-The global constants can already be used inside of the `config.php`.
+The global constants can already be used inside of the `config.php` however the `TEXT` constant won't be available at this point!
 
 #### `views/`
 Inside of the `views` folder you put your PHP or HTML files that define the layout for each page view of your website. 
@@ -22,10 +22,12 @@ For example if you place a file the following `views/login/index.php` then the r
 will be  `https://<yourDomain>/<languageCode>/login/`.
 
 #### `translations/`
-The `translations` directory contains JSON files that contain the actual text in different languages.  
+The `translations` directory contains JSON files that contain the actual text in a specific language.  
 Inside the `translations/globals.json` you can define text variables that should be available in every language  
 e.g. all the native language names.  
-Important is that the name of the JSON files should be the language code the file represents e.g. `en.json`, `zh-Hans.json`, etc  
+Important is that the name of the JSON files should be the language code the file represents e.g. `en.json`, `zh-Hans.json`, etc.  
+Inside the text you can use PHP constants defined by this framework or in the `config.php` file by simply enclosing them in `%%` e.g. 
+`"Some text with a %%MY_CONSTANT%%"`. Variables cannot be referenced inside translations for security reasons.  
 Longer texts like legal notices you can but into separate files inside the `translations` directory and include 
 the content of a fiel using the following `<?php include(TRANSLATIONS.<pathInsideTranslationsDir>); ?>`
 

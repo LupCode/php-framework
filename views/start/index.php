@@ -44,7 +44,7 @@ noCache();
                 <a class="nodrag" target="_blank" href="https://github.com/LupCode/php-framework">GitHub Repository</a>
             </div>
             <footer>
-                <a class="noselect nodrag" target="_blank" href="https://lupcode.com">LupCode</a>
+                <a class="noselect nodrag" target="_blank" href="https://lupcode.com"><?php echo NAME; ?></a>
                 <div class="language-selector"><?php
                     foreach(SUPPORTED_LANGUAGES as $lang){
                         // ROOT.$lang.'/'.REQUEST is URL to switch language

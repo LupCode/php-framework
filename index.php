@@ -77,6 +77,9 @@ define('FILE_EXTENSION_TO_MIME', array(
 ));
 
 
+/** Sequence that must be in front and after constants that are referenced in the JSON translation files */
+define('TRANSLATION_CONSTANT_ESCAPE', '%%');
+
 
 // ---------------------------------------------------------------------------------------
 // INTERAL PROCESSING OF REQUESTS
@@ -149,6 +152,7 @@ function toSupportedLanguage($code){
 	return in_array($code, SUPPORTED_LANGUAGES) ? $code : false;
 }
 
+
 // Trim to actual request
 $base = substr($_SERVER['SCRIPT_NAME'], 0, -strlen(basename($_SERVER['SCRIPT_NAME'])));
 $requestWithQuery = substr($_SERVER['REQUEST_URI'], strlen($base));
@@ -162,7 +166,11 @@ $useLangCookie = (LANGUAGE_COOKIE_NAME && !empty(LANGUAGE_COOKIE_NAME));
 $idx = strpos(FULL_REQUEST, '/');
 if($idx > 0) $lang = toSupportedLanguage(substr(FULL_REQUEST, 0, $idx));
 if(!$lang && $useLangCookie && isset($_COOKIE[LANGUAGE_COOKIE_NAME])) $lang = toSupportedLanguage($_COOKIE[LANGUAGE_COOKIE_NAME]);
-if(!$lang) $lang = toSupportedLanguage($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+if(!$lang){
+	$al = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+	$idx = strpos($al, ',');
+	$lang = toSupportedLanguage($idx ? substr($al, 0, $idx) : $al);
+}
 define('LANGUAGE_CODE', $lang ? $lang : DEFAULT_LANGUAGE_CODE);
 if($useLangCookie) setcookie(LANGUAGE_COOKIE_NAME, LANGUAGE_CODE, (LANGUAGE_COOKIE_EXPIRE_SEC > 0 ? time()+LANGUAGE_COOKIE_EXPIRE_SEC : 0), '/', LANGUAGE_COOKIE_DOMAIN);
 $langLen = strlen(LANGUAGE_CODE);
@@ -204,15 +212,42 @@ function respondWithFile($file, $isAlreadyNotFound=false){
 	// execute PHP files
 	if(str_ends_with($file, '.php')){
 		// load language files, define constants and include config
-		$globals = json_decode(file_get_contents(TRANSLATIONS.'globals.json'), true);
-		$trans = json_decode(file_get_contents(TRANSLATIONS.LANGUAGE_CODE.'.json'), true);
-		define('TEXT', array_merge((is_array($globals) ? $globals : array()), (is_array($trans) ? $trans : array())));
 		define('ROOT_DEPTH', substr_count(FULL_REQUEST, "/")+$add);
 		define('BASE_DEPTH', substr_count(REQUEST, "/")+$add);
 		define('BASE', str_repeat('../', BASE_DEPTH));
 		define('ROOT', BASE.(ROOT_DEPTH != BASE_DEPTH ? '../' : ''));
 		foreach(scandir(STATICS) as $dir) if(is_dir(STATICS.$dir)) define(strtoupper($dir), ROOT.$dir.'/');
-		require_once('config.php');
+		include('config.php');
+
+		function replaceVariables($str){
+			$val = ""; $start = -1; $end = 0;
+			do {
+				$start = strpos($str, TRANSLATION_CONSTANT_ESCAPE, $end);
+				if($start === false){ $val .= substr($str, $end); break; }
+				$val .= substr($str, $end, $start-$end);
+				$start += strlen(TRANSLATION_CONSTANT_ESCAPE);
+				$end = strpos($str, TRANSLATION_CONSTANT_ESCAPE, $start);
+				if($end === false){ $val .= TRANSLATION_CONSTANT_ESCAPE.substr($str, $start); break; }
+				$len = $end - $start;
+				if($len !== 0) $val .= constant(substr($str, $start, $len));
+				$end += strlen(TRANSLATION_CONSTANT_ESCAPE);
+			} while(true);
+			return $val;
+		}
+
+		$arr = array();
+		$globals = json_decode(file_get_contents(TRANSLATIONS.'globals.json'), true);
+		foreach($globals as $key=>$value){
+			$arr[$key] = replaceVariables($value);
+		}
+
+		$trans = json_decode(file_get_contents(TRANSLATIONS.LANGUAGE_CODE.'.json'), true);
+		foreach($trans as $key=>$value){
+			$arr[$key] = replaceVariables($value);
+		}
+
+		define('TEXT', $arr);
+
 		include($file);
 		exit(0);
 	}

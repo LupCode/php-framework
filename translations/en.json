@@ -1,6 +1,6 @@
 {
 	"languageName": "English",
-	"pageTitleStart": "PHP-Framework by LupCode",
+	"pageTitleStart": "PHP-Framework by %%NAME%%",
 	"pageDescriptionError": "The requested URL was not found",
-	"pageDescriptionStart": "Example start page of this framework developed by LupCode"
+	"pageDescriptionStart": "Example start page of this framework developed by %%NAME%%"
 }
