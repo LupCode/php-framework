@@ -9,7 +9,7 @@
             if(substr($k, 0, 4) !== 'txt-') continue;
             $json[substr($k, 4)] = $v;
         }
-        $saveJson = json_encode($json, JSON_PRETTY_PRINT);
+        $saveJson = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if($saveJson){
             file_put_contents(TRANSLATIONS.$selectedLang.'.json', $saveJson);
         }
