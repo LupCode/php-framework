@@ -171,10 +171,11 @@ define('REQUEST', ($fullRequestLen < $langLen || strtolower(substr(FULL_REQUEST,
  * If file does not exist the NOT_FOUND_PAGE will be used if defined otherwise responds with 404 error. 
  * @param String $file Path to the file
  */
-function respondWithFile($file, $isAlreadyNotFound=false){
+function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false){
 	// safety checks
 	$realFile = ($file ? realpath($file) : ''); $realRoot = realpath(__DIR__);
 	if(!$file || !file_exists($file) || strlen($realFile) < strlen($realRoot) || !str_starts_with($realFile, $realRoot)){
+		if($isInsideStatics) respondWithFile(VIEWS.REQUEST, $isAlreadyNotFound);
 		header("HTTP/1.0 404 Not Found", true, 404); // signal search engines that page is an error page
 		if($isAlreadyNotFound || !NOT_FOUND_PAGE || empty(NOT_FOUND_PAGE)) exit();
 		respondWithFile(VIEWS.NOT_FOUND_PAGE, true);
@@ -195,7 +196,10 @@ function respondWithFile($file, $isAlreadyNotFound=false){
 				break;
 			}
 		}
-		if($notFound) respondWithFile(null, $isAlreadyNotFound);
+		if($notFound){
+			if($isInsideStatics) respondWithFile(VIEWS.REQUEST, $isAlreadyNotFound);
+			respondWithFile(null, $isAlreadyNotFound);
+		}
 	}
 
 	// execute PHP files
@@ -274,7 +278,7 @@ foreach(scandir(STATICS) as $dir){
 		}
 		if($dir === _CSS) include(CSS_COMPONENTS.'css-config.php');
 		if($dir === _JS) include(JS_COMPONENTS.'js-config.php');
-		respondWithFile(STATICS.FULL_REQUEST);
+		respondWithFile(STATICS.FULL_REQUEST, false, true);
 	}
 }
 
