@@ -24,7 +24,10 @@ something in it in order to use the framework.
 Inside of the `views` folder you put your PHP or HTML files that define the layout for each page view of your website. 
 The structure inside the `views` folder is important because it also defines how the URLs, that the user calls, will look like later on.  
 For example if you place a file the following `views/login/index.php` then the resulting URL to request the file 
-will be  `https://<yourDomain>/<languageCode>/login/`.
+will be  `https://<yourDomain>/<languageCode>/login/`.  
+If the `static` directory contains an equal path as inside `views`, the path inside `static` is preferred, however if the 
+file does not exist in `static` then the path inside `views` will be looked up. This allows to have e.g. the directory `static/downloads/` in which 
+files for download are put and at the same time a directory `views/downloads/` which defines the view.
 
 #### `translations/`
 The `translations` directory contains JSON files that contain the actual text in a specific language.  
@@ -66,7 +69,8 @@ It is also used by the framework to set caching headers for CSS, JavaScript, ima
 Everything inside the `static` directory is directly publicly accessible without the word `static` in the URL e.g. 
 `static/css/start.css` --> `https://<yourDomain>/css/start.css`.  
 Every direct subdirectory of the `static` directory e.g. `static/images/` gets a constant with the same name in uppercase defined e.g. `IMAGES` 
-with a relative path the named subdirectory such that the constant can be used as prefix in links e.g. `<img src="<?php echo IMAGES; ?>favicons/favicon.ico">`
+with a relative path the named subdirectory such that the constant can be used as prefix in links e.g. `<img src="<?php echo IMAGES; ?>favicons/favicon.ico">`.  
+If you use an equal path inside the `static` directory as in the `views` diretory have a look at [views/](#views) for details. 
 
 #### `static/css/`
 Files automatically generated out of the `css-components` will be placed here. 
