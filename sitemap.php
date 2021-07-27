@@ -27,23 +27,23 @@ define('SITEMAP_CACHE_SECONDS', 3600); // 1 hour
 // ---------------------------------------------------------------------------------------
 
 // check if sitemap file already generated and inside cache periode
-$fmt = filemtime(SITEMAP_FILE); // last modified time of generated sitemap file
-if($fmt && (time() + SITEMAP_CACHE_SECONDS) < $fmt){ echo file_get_contents(SITEMAP_FILE); exit(); }
+$sitemapFile = 'sitemap.xml';
+$fmt = file_exists($sitemapFile) ? filemtime($sitemapFile) : false; // last modified time of generated sitemap file
+if($fmt && (time() + SITEMAP_CACHE_SECONDS) < $fmt){ echo file_get_contents($sitemapFile); exit(); }
 
 // newly generate sitemap
 $timeFormat = "Y-m-dTH:i:sP";
 $today = date($timeFormat);
-$langs = getSupportedLanguages();
 $domain = $_SERVER['SERVER_NAME'];
 $c = '<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ';
 foreach(SITEMAP_URLS as $path => $info){
-    foreach($langs as $lang){
-        $m = filemtime(_VIEWS.$path);
+    foreach(SUPPORTED_LANGUAGES as $lang){
+        $m = filemtime(VIEWS.$path);
         $c .= 
 '   <url>
-        <loc>https://'.$domain.'/'.$kang.'/'.$path.'</loc>
+        <loc>https://'.$domain.'/'.$lang.'/'.$path.'</loc>
         <lastmod>'.($m ? date($timeFormat, $m) : $today).'</lastmod>
         <priority>'.$info[0].'</priority>
         <changefreq>'.$info[1].'</changefreq>
@@ -53,9 +53,9 @@ foreach(SITEMAP_URLS as $path => $info){
     $c .= '
 ';
 }
-$c .= CUSTOM_URL_ENTRIES.'
-</urlset>';
+$c .= CUSTOM_URL_ENTRIES.'</urlset>';
 file_put_contents('sitemap.xml', $c);
+header('Content-Type: text/xml', true);
 echo $c;
 exit();
 ?>
