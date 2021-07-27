@@ -2,5 +2,20 @@
     "languageName": "Deutsch",
     "pageTitleStart": "PHP-Framework von  %%NAME%%",
     "pageDescriptionError": "Die angeforderte Resource konnte nicht gefunden werden",
-    "pageDescriptionStart": "Beispiel-Startseite dieses von  %%NAME%% entwickelten Frameworks"
+    "pageDescriptionStart": "Beispiel-Startseite dieses von  %%NAME%% entwickelten Frameworks",
+
+    "pageTitleLanguageEditor": "Spracheditor - PHP Framework von LupCode",
+    "AutoTranslate": "Auto Übersetzung",
+    "Cancel": "Abbruch",
+    "Create": "Erstellen",
+    "CreateNewLanguage": "Neue Sprache erstellen",
+    "CreatesNewLanguageByCloning": "Erstellt neue Sprache indem ausgewählte dupliziert wird",
+	"Delete": "Löschen",
+    "Key": "Schlüssel",
+    "NewLanguageCode": "Neuer Sprachcode",
+	"Save": "Speichern",
+    "SelectedLanguage": "Ausgewählte Sprache",
+    "SelectLanguageAndEditText": "Wähle eine Sprache und bearbeite den Text. Vergiss nicht zu speichern",
+    "SomeFileSomethingMissing": "In manchen Datein fehlt etwas",
+    "Text": "Text"
 }

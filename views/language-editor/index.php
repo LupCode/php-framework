@@ -9,10 +9,8 @@
             if(substr($k, 0, 4) !== 'txt-') continue;
             $json[substr($k, 4)] = $v;
         }
-        $saveJson = json_encode($json, JSON_PRETTY_PRINT);
-        if($saveJson){
-            file_put_contents(TRANSLATIONS.$selectedLang.'.json', $saveJson);
-        }
+        $saveJson = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if($saveJson) file_put_contents(TRANSLATIONS.$selectedLang.'.json', $saveJson);
     }
 
     // create new language
@@ -70,7 +68,7 @@
     </head>
     <body style="font-family:sans-serif">
         <form id="form" method="POST"></form>
-        <h2>Selected Language: <select id="select" onchange="window.location.href='?l='+this.value;"><?php
+        <h2><?php echo TEXT['SelectedLanguage']; ?>: <select id="select" onchange="window.location.href='?l='+this.value;"><?php
             $keys = array();
             $values = array(); // lang: array()
             $currentShowWarning = false;
@@ -99,15 +97,15 @@
                         ($ok ? '' : ' style="color:#d00"').'>'.strtoupper($lang).($ok ? '' : ' /!\\').'</option>';
             }
         
-            echo '</select>'.($currentShowWarning ? '<span class="warning-sign" title="In some file(s) is something missing">!</span>' : '');
+            echo '</select>'.($currentShowWarning ? '<span class="warning-sign" title="'.TEXT['SomeFileSomethingMissing'].'">!</span>' : '');
         ?>
-            <button type="submit" id="save" name="save" form="form" disabled>Save</button>
-            <button type="reset" id="cancel" form="form" disabled onclick="unchanged();">Cancel</button>
-            <button type="submit" id="delete" name="delete" form="form" onclick="unchanged();" style="color:#c00">Delete</button>
+            <button type="submit" id="save" name="save" form="form" disabled><?php echo TEXT['Save']; ?></button>
+            <button type="reset" id="cancel" form="form" disabled onclick="unchanged();"><?php echo TEXT['Cancel']; ?></button>
+            <button type="submit" id="delete" name="delete" form="form" onclick="unchanged();" style="color:#c00"><?php echo TEXT['Delete']; ?></button>
         </h2>
-        <i>Select a language and edit the text fields. Don't forget to click on 'save'</i>
+        <i><?php echo TEXT['SelectLanguageAndEditText']; ?></i>
         <table>
-            <tr><th>Key</th><th>Text</th></tr>
+            <tr><th><?php echo TEXT['Key']; ?></th><th><?php echo TEXT['Text']; ?></th></tr>
             <?php
 
                 $vals = $values[$selectedLang];
@@ -123,11 +121,11 @@
             ?>
         </table>
         <br /><br /><br />
-        <h2>Create new language: 
-            <input id="new-lang" type="text" name="new-lang" form="form" placeholder="New language code"></input>
-            <button id="create" type="submit" form="form">Create</button>
+        <h2><?php echo TEXT['CreateNewLanguage']; ?>: 
+            <input id="new-lang" type="text" name="new-lang" form="form" placeholder="<?php echo TEXT['NewLanguageCode']; ?>" size="14"></input>
+            <button id="create" type="submit" form="form"><?php echo TEXT['Create']; ?></button>
         </h2>
-        <i>Creates new language by cloning currently selected language</i>
+        <i><?php echo TEXT['CreatesNewLanguageByCloning']; ?></i>
     </body>
 </html>
 <style>
