@@ -146,7 +146,7 @@ function toSupportedLanguage($code){
 $base = substr($_SERVER['SCRIPT_NAME'], 0, -strlen(basename($_SERVER['SCRIPT_NAME'])));
 $requestWithQuery = substr($_SERVER['REQUEST_URI'], strlen($base));
 $len = strlen($_SERVER['QUERY_STRING']);
-define('FULL_REQUEST', (!$len && !empty($requestWithQuery) && $requestWithQuery[-1] !== '?') ? $requestWithQuery : substr($requestWithQuery, 0, -($len+1)));
+define('FULL_REQUEST', urldecode((!$len && !empty($requestWithQuery) && $requestWithQuery[-1] !== '?') ? $requestWithQuery : substr($requestWithQuery, 0, -($len+1))));
 $fullRequestLen = strlen(FULL_REQUEST);
 
 // Detect language
