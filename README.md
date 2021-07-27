@@ -15,6 +15,11 @@ The idea is to define your custom constants/variables inside of it.
 However credentials should be placed in the `.env` file for security reasons.
 The global constants can already be used inside of the `config.php` however the `TEXT` constant won't be available at this point!
 
+#### `index.php`
+This file handles all requests and is the heart of this framework. 
+At the top of it you have some customization options, however the framework comes fully functioning out of the box so it is not necessary to change 
+something in it in order to use the framework.  
+
 #### `views/`
 Inside of the `views` folder you put your PHP or HTML files that define the layout for each page view of your website. 
 The structure inside the `views` folder is important because it also defines how the URLs, that the user calls, will look like later on.  
