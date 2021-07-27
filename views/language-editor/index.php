@@ -28,8 +28,38 @@
     }
 
 ?><!DOCTYPE html>
+<?php
+
+echo '<script type="text/javascript">';
+echo    'const TEXT_NOT_SAVED_YET="'.TEXT['NotSavedYet'].'";';
+echo '</script>';
+
+?>
 <script>
-    function changed(){
+    let PREVENT_CLOSING = false;
+
+    // called when tab should get closed
+    window.addEventListener("beforeunload", function(event){
+        if(PREVENT_CLOSING){
+            event.preventDefault();
+            return event.returnValue = PREVENT_CLOSING;
+        }
+    });
+
+    // check if 'STRG + S' gets clicked
+    window.addEventListener('keydown', function(event){
+        if(event.ctrlKey && event.code === "KeyS"){
+            let but = document.getElementById("save");
+            if(but){
+                event.preventDefault();
+                but.click();
+                return false;
+            }
+        }
+    });
+
+    function languageEditorChanged(){
+        PREVENT_CLOSING = true;
         let select = document.getElementById("select");
         if(select) select.disabled = true;
         let save = document.getElementById("save");
@@ -43,7 +73,9 @@
         let create = document.getElementById("create");
         if(create) create.disabled = true;
     }
-    function unchanged(){
+
+    function languageEditorUnchanged(){
+        PREVENT_CLOSING = false;
         let select = document.getElementById("select");
         if(select) select.disabled = false;
         let save = document.getElementById("save");
@@ -99,9 +131,9 @@
         
             echo '</select>'.($currentShowWarning ? '<span class="warning-sign" title="'.TEXT['SomeFileSomethingMissing'].'">!</span>' : '');
         ?>
-            <button type="submit" id="save" name="save" form="form" disabled><?php echo TEXT['Save']; ?></button>
-            <button type="reset" id="cancel" form="form" disabled onclick="unchanged();"><?php echo TEXT['Cancel']; ?></button>
-            <button type="submit" id="delete" name="delete" form="form" onclick="unchanged();" style="color:#c00"><?php echo TEXT['Delete']; ?></button>
+            <button type="submit" id="save" name="save" form="form" onclick="PREVENT_CLOSING = undefined;" disabled><?php echo TEXT['Save']; ?></button>
+            <button type="reset" id="cancel" form="form" disabled onclick="languageEditorUnchanged();"><?php echo TEXT['Cancel']; ?></button>
+            <button type="submit" id="delete" name="delete" form="form" onclick="languageEditorUnchanged();" style="color:#c00"><?php echo TEXT['Delete']; ?></button>
         </h2>
         <i><?php echo TEXT['SelectLanguageAndEditText']; ?></i>
         <table>
@@ -115,7 +147,7 @@
                 foreach($keys as $k){
                     $v = (array_key_exists($k, $vals) ? $vals[$k] : '');
                     echo '<tr><td'.(empty($v) ? ' style="color:#d00"' : '').'><span>'.$k.'</span></td>';
-                    echo '<td><textarea name="txt-'.$k.'" form="form" onkeyup="changed();">'.$v.'</textarea></td></tr>';
+                    echo '<td><textarea name="txt-'.$k.'" form="form" onkeyup="languageEditorChanged();">'.$v.'</textarea></td></tr>';
                 }
             
             ?>

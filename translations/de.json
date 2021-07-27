@@ -5,7 +5,6 @@
     "pageDescriptionStart": "Beispiel-Startseite dieses von  %%NAME%% entwickelten Frameworks",
 
     "pageTitleLanguageEditor": "Spracheditor - PHP Framework von LupCode",
-    "AutoTranslate": "Auto Übersetzung",
     "Cancel": "Abbruch",
     "Create": "Erstellen",
     "CreateNewLanguage": "Neue Sprache erstellen",
@@ -13,6 +12,7 @@
 	"Delete": "Löschen",
     "Key": "Schlüssel",
     "NewLanguageCode": "Neuer Sprachcode",
+    "NotSavedYet": "Noch nicht gespeichert!",
 	"Save": "Speichern",
     "SelectedLanguage": "Ausgewählte Sprache",
     "SelectLanguageAndEditText": "Wähle eine Sprache und bearbeite den Text. Vergiss nicht zu speichern",
