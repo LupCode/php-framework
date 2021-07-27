@@ -85,17 +85,6 @@ define('TRANSLATION_CONSTANT_ESCAPE', '%%');
 // INTERAL PROCESSING OF REQUESTS
 // ---------------------------------------------------------------------------------------
 
-// Load environment variables
-if(($handle = fopen(ENVIRONMENT_FILE, "r"))){
-	while(($line = fgets($handle)) !== false){
-		$idx = strpos($line, "=");
-		if($idx < 0) continue;
-		$_ENV[substr($line, 0, $idx)] = substr($line, $idx+1);
-		putenv($line);
-	}
-	fclose($handle);
-}
-
 /**
  * Takes a path to a file and returns the MIME type based on the file extension.
  * Uses 'FILE_EXTENSION_TO_MIME' array but falls back to mime_content_type() if extenion not defined.
@@ -217,6 +206,21 @@ function respondWithFile($file, $isAlreadyNotFound=false){
 		define('BASE', str_repeat('../', BASE_DEPTH));
 		define('ROOT', BASE.(ROOT_DEPTH != BASE_DEPTH ? '../' : ''));
 		foreach(scandir(STATICS) as $dir) if(is_dir(STATICS.$dir)) define(strtoupper($dir), ROOT.$dir.'/');
+
+		// Load environment variables
+		if(($handle = fopen(ENVIRONMENT_FILE, "r"))){
+			while(($line = fgets($handle)) !== false){
+				$idx = strpos($line, "=");
+				if($idx < 0) continue;
+				$k = trim(substr($line, 0, $idx));
+				if(empty($k) || $k[0] === '#') continue;
+				$v = trim(substr($line, $idx+1));
+				$_ENV[$k] = $v;
+				putenv($k.'='.$v);
+			}
+			fclose($handle);
+		}
+
 		include('config.php');
 
 		function replaceVariables($str){
