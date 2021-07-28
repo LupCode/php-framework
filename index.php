@@ -182,14 +182,11 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 	}
 
 	// if path is directory search inside directory
-	$add = 0;
 	if(is_dir($file)){
+		if(empty($file) || $file[-1] !== '/'){ header('Location: '.FULL_REQUEST.'/', true); exit(0); }
 		$notFound = true;
-		$needSlash = (empty($file) || $file[-1] !== '/');
-		$add += ($needSlash && !$isAlreadyNotFound);
-		$dir = $file.($needSlash ? '/' : '');
 		foreach(DEFAULT_INDEX_FILES as $indexName){
-			$path = $dir.$indexName;
+			$path = $file.$indexName;
 			if(file_exists($path)){
 				$file = $path;
 				$notFound = false;
@@ -205,8 +202,8 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 	// execute PHP files
 	if(str_ends_with($file, '.php')){
 		// load language files, define constants and include config
-		define('ROOT_DEPTH', substr_count(FULL_REQUEST, "/")+$add);
-		define('BASE_DEPTH', substr_count(REQUEST, "/")+$add);
+		define('ROOT_DEPTH', substr_count(FULL_REQUEST, "/"));
+		define('BASE_DEPTH', substr_count(REQUEST, "/"));
 		define('BASE', str_repeat('../', BASE_DEPTH));
 		define('ROOT', BASE.(ROOT_DEPTH != BASE_DEPTH ? '../' : ''));
 		foreach(scandir(STATICS) as $dir) if(is_dir(STATICS.$dir)) define(strtoupper($dir), ROOT.$dir.'/');
