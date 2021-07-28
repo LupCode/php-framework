@@ -1,13 +1,6 @@
 {
     "languageNameDE": "Deutsch",
     "languageNameEN": "English",
-    "languageNameES": "Español",
-    "languageNameFR": "Français",
-    "languageNameIT": "Italiano",
-    "languageNameNL": "Nederlands",
-    "languageNamePO": "Polskie",
-    "languageNameRU": "русский",
-
-    "pageKeywordsStartEN": "Start,Framework,PHP,%%NAME%%",
-    "pageKeywordsStartDE": "Start,Framework,PHP,%%NAME%%"
+    "pageKeywordsStartDE": "Start,Framework,PHP,%%NAME%%",
+    "pageKeywordsStartEN": "Start,Framework,PHP,%%NAME%%"
 }
