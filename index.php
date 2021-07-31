@@ -183,7 +183,10 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 
 	// if path is directory search inside directory
 	if(is_dir($file)){
-		if(empty($file) || $file[-1] !== '/'){ header('Location: '.FULL_REQUEST.'/', true); exit(0); }
+		if(!empty(FULL_REQUEST) && FULL_REQUEST[-1] !== '/'){
+			header('Location: '.str_repeat('../', substr_count(FULL_REQUEST, "/")).FULL_REQUEST.'/', true);
+			exit(0);
+		}
 		$notFound = true;
 		foreach(DEFAULT_INDEX_FILES as $indexName){
 			$path = $file.$indexName;
