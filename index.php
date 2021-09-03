@@ -22,6 +22,12 @@ define('NOT_FOUND_PAGE', 'error/');
 define('FAVICON_FILE', 'static/images/favicons/favicon.ico');
 
 
+/** 
+ * Every request will be redirected to HTTPs (execpt if client is on localhost)
+ */
+define('HTTPS_REDIRECT', true);
+
+
 // Cookie settings for remembering users language
 define('LANGUAGE_COOKIE_NAME', 'L'); // name of cookie to store users last visited language (empty or false to disable)
 define('LANGUAGE_COOKIE_EXPIRE_SEC', 5184000); // 60 days
@@ -84,6 +90,16 @@ define('TRANSLATION_CONSTANT_ESCAPE', '%%');
 // ---------------------------------------------------------------------------------------
 // INTERAL PROCESSING OF REQUESTS
 // ---------------------------------------------------------------------------------------
+
+// check if redirect to https is needed
+if(HTTPS_REDIRECT && $_SERVER['REMOTE_ADDR'] !== "127.0.0.1" && $_SERVER['REMOTE_ADDR'] !== "::1" && !(
+	(isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ||
+	(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https' || 
+		!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower($_SERVER['HTTP_X_FORWARDED_SSL']) !== 'off')
+)){
+	header("Location: https://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);
+	exit(0);
+}
 
 /**
  * Takes a path to a file and returns the MIME type based on the file extension.
