@@ -33,7 +33,7 @@ $fmt = file_exists($sitemapFile) ? filemtime($sitemapFile) : false; // last modi
 if($fmt && (time() + SITEMAP_CACHE_SECONDS) < $fmt){ echo file_get_contents($sitemapFile); exit(); }
 
 // newly generate sitemap
-$timeFormat = "Y-m-dTH:i:sP";
+$timeFormat = "Y-m-d\TH:i:sP";
 $today = date($timeFormat);
 $domain = $_SERVER['SERVER_NAME'];
 $c = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:xhtml=\"http://www.w3.org/1999/xhtml\">\n";
