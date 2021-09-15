@@ -22,6 +22,19 @@ define('NOT_FOUND_PAGE', 'error/');
 define('FAVICON_FILE', 'static/images/favicons/favicon.ico');
 
 
+/**
+ * If a requested URI does not exist (cannot be found in the views directory e.g. 'start/123') it will be checked 
+ * if the URI starts with one of the following keys of the array. If a match is found the physical file declared as 
+ * value will be executed instead of the fallback error page (e.g. 'start/123' will be executed by 'views/start/index.php').
+ * The constant 'REQUEST_PREFIX' will contain the matched key and the constant 'REQUEST_SUFFIX' will contain the 
+ * part of the URI that comes immediately after the prefix (language code prefixes in URI will be ignored and don't need to be added in the array keys, 
+ * additionally URIs must not start with '/' e.g. not '/start/' but instead 'start/').
+ */
+define('PREFIX_FALLBACKS', array(
+	'start/' => 'views/start/index.php' // just an example, can be removed
+));
+
+
 /** 
  * Every request will be redirected to HTTPs (execpt if client is on localhost)
  */
@@ -46,7 +59,6 @@ define('ENVIRONMENT_FILE', '.env');
 // Name of CSS and JavaScript directory inside the 'static/' directory. Canno publicly be referenced. No trailing '/'
 define('_CSS', 'css');
 define('_JS', 'js');
-
 
 // Caching times (seconds) for specific subdirectories inside the 'static' directory (0 to cache only for session, -1 to disable caching)
 define('STATICS_CACHE_SECONDS', array(
@@ -187,14 +199,20 @@ define('REQUEST', ($fullRequestLen < $langLen || strtolower(substr(FULL_REQUEST,
  * If file does not exist the NOT_FOUND_PAGE will be used if defined otherwise responds with 404 error. 
  * @param String $file Path to the file
  */
-function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false){
+function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false, $prefix=false){
 	// safety checks
 	$realFile = ($file ? realpath($file) : ''); $realRoot = realpath(__DIR__);
 	if(!$file || !file_exists($file) || strlen($realFile) < strlen($realRoot) || !str_starts_with($realFile, $realRoot)){
-		if($isInsideStatics) respondWithFile(VIEWS.REQUEST, $isAlreadyNotFound);
+		if($isInsideStatics) respondWithFile(VIEWS.REQUEST, $isAlreadyNotFound, false, $prefix);
+
+		// respond with prefixed fallbacks
+		foreach(PREFIX_FALLBACKS as $pref => $file)
+			if(str_starts_with(REQUEST, $pref) && file_exists($file)) respondWithFile($file, false, false, $pref);
+
+		// respond with not found page
 		header("HTTP/1.0 404 Not Found", true, 404); // signal search engines that page is an error page
 		if($isAlreadyNotFound || !NOT_FOUND_PAGE || empty(NOT_FOUND_PAGE)) exit();
-		respondWithFile(VIEWS.NOT_FOUND_PAGE, true);
+		respondWithFile(VIEWS.NOT_FOUND_PAGE, true, false, $prefix);
 	}
 
 	// if path is directory search inside directory
@@ -213,14 +231,18 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 			}
 		}
 		if($notFound){
-			if($isInsideStatics) respondWithFile(VIEWS.REQUEST, $isAlreadyNotFound);
-			respondWithFile(null, $isAlreadyNotFound);
+			if($isInsideStatics) respondWithFile(VIEWS.REQUEST, $isAlreadyNotFound, false, $prefix);
+			respondWithFile(null, $isAlreadyNotFound, false, $prefix);
 		}
 	}
 
 	// execute PHP files
 	if(str_ends_with($file, '.php')){
 		// load language files, define constants and include config
+		define('REQUEST_PREFIX', $prefix === false ? REQUEST : $prefix);
+		define('REQUEST_SUFFIX', $prefix === false ? false : substr(REQUEST, strlen($prefix)));
+		define('REQUEST_SUFFIX_PARTS', !empty(REQUEST_SUFFIX) ? explode('/', REQUEST_SUFFIX[0] === '/' ? substr(REQUEST_SUFFIX, 1) : REQUEST_SUFFIX) : array());
+		define('REQUEST_PREFIX_BASE', str_repeat('../', max(0, count(REQUEST_SUFFIX_PARTS)-1) ));
 		define('ROOT_DEPTH', substr_count(FULL_REQUEST, "/"));
 		define('BASE_DEPTH', substr_count(REQUEST, "/"));
 		define('BASE', str_repeat('../', BASE_DEPTH));

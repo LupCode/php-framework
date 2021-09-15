@@ -40,11 +40,21 @@ noCache();
                 <div></div>
             </header>
             <div class="main">
+                <?php
+                    
+                    // Example for PREFIX_FALLBACKS. Every URI that starts with 'start/' will also trigger this page
+                    // but additionally the part of the URI after 'start/' will be displayed here
+                    if(REQUEST_SUFFIX !== false){
+                        $num = max(1, intval(explode('/', REQUEST_SUFFIX)[0]));
+                        echo '<a href="'.REQUEST_PREFIX_BASE.($num+1).'"><h2>&gt; '.$num.' &lt;</h2></a>';
+                    }
+                ?>
                 <p><?php echo TEXT['pageDescriptionStart']; ?></p>
                 <a class="nodrag" target="_blank" href="https://github.com/LupCode/php-framework">GitHub Repository</a>
             </div>
             <footer>
                 <a class="noselect nodrag" target="_blank" href="https://lupcode.com"><?php echo NAME; ?></a>
+                <a href="<?php echo BASE; ?>start/1"><?php echo TEXT['ExampleCounter']; ?></a>
                 <div class="language-selector"><?php
                     foreach(SUPPORTED_LANGUAGES as $lang){
                         // ROOT.$lang.'/'.REQUEST is URL to switch language

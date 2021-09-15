@@ -110,8 +110,12 @@ that can be used for links
 * `SCRIPTS` Path to the internal `scripts/` directory, can only be used with `include()` or `require_once()`
 * `TEXT` Array loaded with the translation variables from the `translations/globals.json` and the language specific translation file inside `translations/`
 * `LANGUAGE_CODE` Language code of the language in which the page should be displayed e.g. `en` for English, `de` for German, etc
-* `REQUEST` Requested URI without the language prefix in front of it e.g. `users/login/index.php` or `css/start.css`
 * `FULL_REQUEST` Requested URI with the language prefix in front of it if given e.g. `en/users/login/index.php` or `css/start.css`
+* `REQUEST` Requested URI without the language prefix in front of it e.g. `users/login/index.php` or `css/start.css`
+* `REQUEST_PREFIX` Typically same as `REQUEST` except if match in the `PREFIX_FALLBACKS` array is found, then its equal to the matched prefix
+* `REQUEST_SUFFIX` Typically `false` except if match in the `PREFIX_FALLBACKS` array is found, then value is the part of the requested URI that comes after the prefix
+* `REQUEST_SUFFIX_PARTS` Array that contains the parts of `REQUEST_SUFFIX` seperated by `/` or empty
+* `REQUEST_PREFIX_BASE` Relative path to the prefix part of the URI that can be used in links etc (zero or multiple `../`)
 * `BASE` Relative path to the language specific root that can be used to send user back to root URL without droping the language prefix
 * `ROOT` Relative path to absolute root which means that also the language prefix will be dropped
 * `BASE_DEPTH` Integer how deep the requested file is without the language prefix taken into account e.g. `en/users/login/index.php` --> `2`
