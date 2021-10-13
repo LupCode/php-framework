@@ -183,7 +183,7 @@ $useLangCookie = (LANGUAGE_COOKIE_NAME && !empty(LANGUAGE_COOKIE_NAME));
 $idx = strpos(FULL_REQUEST, '/');
 if($idx > 0) $lang = toSupportedLanguage(substr(FULL_REQUEST, 0, $idx));
 if(!$lang && $useLangCookie && isset($_COOKIE[LANGUAGE_COOKIE_NAME])) $lang = toSupportedLanguage($_COOKIE[LANGUAGE_COOKIE_NAME]);
-if(!$lang){
+if(!$lang && isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])){
 	$al = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 	$idx = strpos($al, ',');
 	$lang = toSupportedLanguage($idx ? substr($al, 0, $idx) : $al);
