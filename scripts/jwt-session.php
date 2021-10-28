@@ -16,17 +16,19 @@
     define('JWT_ASN1_INTEGER', 0x02);
     define('JWT_ASN1_BIT_STRING', 0x03);
 
-    function _jwt_decode($base64){
+    function _jwt_decode($base64, $parseJson=true){
         $add = strlen($base64) % 4;
-        if($add) $base64 .= str_repeat("=", 4 - $add);
-        $base64 = base64_decode(str_replace(array('-', '_'), array('+', '/'), $base64));
-        return json_decode($base64, false, 512, JSON_BIGINT_AS_STRING);
+        if($add != 0) $base64 .= str_repeat("=", 4 - $add);
+        $base64 = base64_decode(str_replace(array("-", "_"), array("+", "/"), $base64));
+        return $parseJson ? json_decode($base64, false, 512, JSON_BIGINT_AS_STRING) : $base64;
     }
 
-    function _jwt_encode($json){
-        $json = json_encode($json);
-        if(json_last_error() != JSON_ERROR_NONE) throw new InvalidArgumentException(json_last_error_msg());
-        return str_replace(array('=', '+', '/'), array('', '-', '_', ), base64_encode($json));
+    function _jwt_encode($str, $isJsonObj=true){
+        if($isJsonObj){
+            $str = json_encode($str);
+            if(json_last_error() != JSON_ERROR_NONE) throw new InvalidArgumentException(json_last_error_msg());
+        }
+        return str_replace(array("=", "+", "/"), array("", "-", "_", ), base64_encode($str));
     }
 
     function _jwt_read_der($der, $offset=0){
@@ -82,11 +84,16 @@
      * @param String $sig Signature of the message needed to prove the integrity
      * @param String $secretKey
      */
-    function jwt_verify($msg, $sig, $secretKey, $alg, $algorithms=null){
+    function jwt_verify($msg, $sig, $secretKey=null, $alg='HS256', $algorithms=null){
+        if(empty($secretKey)){
+            if(!isset($_ENV['JWT_SECRET_KEY']) || empty($_ENV['JWT_SECRET_KEY']))
+                throw new InvalidArgumentException("Secret key cannot be null if \$_ENV['JWT_SECRET_KEY'] is not defined");
+            $secretKey = $_ENV['JWT_SECRET_KEY'];
+        }
         $algorithms = !empty($algorithms) ? (is_array($algorithms) ? $algorithms : array($algorithms)) : JWT_SUPPORTED_ALGORITHMS;
         if(empty($alg) || !isset($algorithms[$alg])) return false;
 
-        list($func, $algo) = $algorithms[$alg];
+        list($func, $alg) = $algorithms[$alg];
         switch ($func) {
             case 'openssl':
                 $success = openssl_verify($msg, $sig, $secretKey, $alg);
@@ -111,9 +118,7 @@
                 $hashLen = _jwt_strlen($hash);
                 $len = min($sigLen, $hashLen);
                 $status = 0;
-                for ($i = 0; $i < $len; $i++) {
-                    $status |= (ord($sig[$i]) ^ ord($hash[$i]));
-                }
+                for($i=0; $i < $len; $i++) $status |= (ord($sig[$i]) ^ ord($hash[$i]));
                 $status |= ($sigLen ^ $hashLen);
                 return ($status === 0);
         }
@@ -137,19 +142,19 @@
         $currentTime = $currentTime ? $currentTime : time();
         $algorithms = !empty($algorithms) ? (is_array($algorithms) ? $algorithms : array($algorithms)) : JWT_SUPPORTED_ALGORITHMS;
 
-        $parts = explode('.', $jwt);
+        $parts = explode(".", $jwt);
         if(count($parts) != 3) return array();
 
         list($head64, $payload64, $sig64) = $parts;
-        if(!($header = _jwt_decode($head64) || !($payload = _jwt_decode($payload64) || !($sig = _jwt_decode($sig64)))))
+        if(!($header = _jwt_decode($head64)) || !($payload = _jwt_decode($payload64)) || !($sig = _jwt_decode($sig64, false)))
             return array();
 
         if(empty($header->alg) || !isset($algorithms[$header->alg]))
             return array();
-            
+        
         if ($header->alg === 'ES256' || $header->alg === 'ES384') {
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES384 signatures
-            list($r, $s) = str_split($raw, strlen($raw)/2);
+            list($r, $s) = str_split($sig, strlen($sig)/2);
             $r = ltrim($r, "\x00");
             $s = ltrim($s, "\x00");
             $r = _jwt_encode_der(JWT_ASN1_INTEGER, ord[$r[0]] > 0x7f ? "\x00".$r : $r);
@@ -158,7 +163,7 @@
         }
 
         // Check the signature
-        if(!jwt_verify($headb64.$payload64, $sig, $secretKey, $header->alg)) return array();
+        if(!jwt_verify($head64.".".$payload64, $sig, $secretKey, $header->alg)) return array();
 
         // Check if token can already be used (if set)
         $leeway = isset($_ENV['JWT_LEEWAY_SEC']) ? intval($_ENV['JWT_LEEWAY_SEC']) : 0;
@@ -187,11 +192,9 @@
                 throw new InvalidArgumentException("Secret key cannot be null if \$_ENV['JWT_SECRET_KEY'] is not defined");
             $secretKey = $_ENV['JWT_SECRET_KEY'];
         }
-        if(empty($alg) || JWT_SUPPORTED_ALGORITHMS[$alg]) throw new InvalidArgumentException('Algorithm not supported');
+        if(empty($alg) || !isset(JWT_SUPPORTED_ALGORITHMS[$alg])) throw new InvalidArgumentException('Algorithm not supported');
         list($func, $alg) = JWT_SUPPORTED_ALGORITHMS[$alg];
         switch ($func) {
-            case 'hash_hmac':
-                return hash_hmac($alg, $msg, $secretKey, true);
             case 'openssl':
                 $sig = '';
                 $success = openssl_sign($msg, $signature, $secretKey, $alg);
@@ -211,12 +214,17 @@
                 } catch (Exception $e) {
                     throw new ErrorException($e->getMessage(), 0, $e);
                 }
+            case 'hash_hmac':
+            default:
+                return hash_hmac($alg, $msg, $secretKey, true);
         }
     }
 
 
     /** Creates a JWT
-     * @param Array $payload JSON object into which custom data can be stored
+     * @param Array $payload JSON object into which custom data can be stored. Spezial functional values are:
+     * "nbf": <UtcSec> to defined that token is valid after a (future) timestamp
+     * "
      * @param String $secretKey Private key to sign JWT (if null then $_ENV['JWT_SECRET_KEY'])
      * @param String $alg Algorithm that should be used for signing (optional)
      * @param String $keyId ID of the key (optional)
@@ -227,8 +235,8 @@
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if($keyId !== null) $header['kid'] = $keyId;
         if(isset($head) && is_array($head)) $header = array_merge($head, $header);
-        $jwt = _jwt_encode($header) . _jwt_encode($payload);
-        return $jwt . _jwt_encode(jwt_sign($jwt, $secretKey, $alg));
+        $jwt = _jwt_encode($header) .".". _jwt_encode($payload);
+        return $jwt .".". _jwt_encode(jwt_sign($jwt, $secretKey, $alg), false);
     }
 
 
@@ -249,16 +257,18 @@
      * @param Object $jsonObj JSON object containing the custom data that should be stored in the session (if null then $_SESSION will be used)
      * @param String $cookieName Name of the cookie in which the session will be stored (default 'jwt')
      * @param Int $cookieExpire Expire seconds for how long the session should be valid (0 = until tab/browser gets closed, default '0')
-     * @param String $cookiePath Path of URL for which the cookie is valid (default '/')
-     * @param String $cookieDomain Domain for which the session is valid (null for current domain, default null)
-     * @param Boolean $cookieSecure True if session should only be sent if HTTPs is used (default false)
+     * @param Boolean $cookieSecure True if session should only be sent if HTTPs is used, if null then $_ENV['JWT_HTTPS_ONLY'] will be used (default null)
+     * @param Boolean $cookieHttpOnly If the cookie should not be readble for JavaScript or other applications (default true)
+     * @param Array $cookieOptions Other cookie options that should be set like 'path', 'domain', 'samesite', etc. (optional)
      */
-    function jwt_session_store($jsonObj=null, $cookieName="jwt", $cookieExpire=0, $cookiePath="/", $cookieDomain=null, $cookieSecure=false, 
-                                $cookieHttpOnly=false, $cookieOptions=array()){
+    function jwt_session_store($jsonObj=null, $cookieName="jwt", $cookieExpire=0, $cookieSecure=null, $cookieHttpOnly=true, $cookieOptions=array()){
         if(is_null($jsonObj)) $jsonObj = $_SESSION;
         $jwt = jwt_encode($jsonObj);
-        if($jwt) setcookie($cookieName, $jwt, $cookieExpire, $cookiePath, is_null($cookieDomain) ? '' : $cookieDomain, 
-                            $cookieSecure, $cookieHttpOnly, $cookieOptions);
+        if(!$jwt) return;
+        $cookieOptions['expires'] = $cookieExpire;
+        $cookieOptions['secure'] = is_null($cookieSecure) ? $_ENV['JWT_HTTPS_ONLY'] : $cookieSecure;
+        $cookieOptions['httponly'] = $cookieHttpOnly;
+        setcookie($cookieName, $jwt, $cookieOptions);
     }
 
 
