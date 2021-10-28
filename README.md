@@ -65,6 +65,20 @@ and then inside a view file e.g. `views/start/index.php` you can include it with
 Script that can be included and defines some functions to easily set HTTP headers for caching. 
 It is also used by the framework to set caching headers for CSS, JavaScript, images and downloads.
 
+#### `scripts/jwt-session.php`
+Script defines functions for working with JWT tokens and also defines some functions to use JWT tokens 
+as session instead of the default session_start() function. The advantage of a JWT session is that 
+it does store all information in the cookie and is therefore not dependend on the local storage of 
+the server (needed if multiple server instances are used). 
+```php
+require_once(SCRIPTS.'jwt-session.php');
+$jsonObj = jwt_session_load();
+$jsonObj->name = "foo";
+$jsonObj->admin = true;
+jwt_session_store($jsonObj);
+```
+If script is not wanted it can be safely deleted as it is not used by the actual framework
+
 #### `static/`
 Everything inside the `static` directory is directly publicly accessible without the word `static` in the URL e.g. 
 `static/css/start.css` --> `https://<yourDomain>/css/start.css`.  
