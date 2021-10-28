@@ -70,14 +70,18 @@ Script defines functions for working with JWT tokens and also defines some funct
 as session instead of the default session_start() function. The advantage of a JWT session is that 
 it does store all information in the cookie and is therefore not dependend on the local storage of 
 the server (needed if multiple server instances are used). 
+If script is not wanted it can be safely deleted as it is not used by the actual framework.
+Example how to use the JWT session, further documentation inside the script file: 
 ```php
-require_once(SCRIPTS.'jwt-session.php');
-$jsonObj = jwt_session_load();
+require_once(SCRIPTS.'jwt-session.php'); // include script
+$jsonObj = jwt_session_load(); // Load session from cookie
+
+// Read/Write session
 $jsonObj->name = "foo";
 $jsonObj->admin = true;
-jwt_session_store($jsonObj);
+
+jwt_session_store($jsonObj); // Store session in cookie (must be done before any HTML gets sent)
 ```
-If script is not wanted it can be safely deleted as it is not used by the actual framework
 
 #### `static/`
 Everything inside the `static` directory is directly publicly accessible without the word `static` in the URL e.g. 
