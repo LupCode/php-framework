@@ -167,13 +167,13 @@
 
         // Check if token can already be used (if set)
         $leeway = isset($_ENV['JWT_LEEWAY_SEC']) ? intval($_ENV['JWT_LEEWAY_SEC']) : 0;
-        if(isset($payload->nbf) && $payload->nbf > ($timestamp + $leeway)) return false;
+        if(isset($payload->nbf) && $payload->nbf > ($currentTime + $leeway)) return false;
 
         // Check that token has been created before 'now'
-        if(isset($payload->iat) && $payload->iat > ($timestamp + $leeway)) return false;
+        if(isset($payload->iat) && $payload->iat > ($currentTime + $leeway)) return false;
 
         // Check if this token has expired.
-        if(isset($payload->exp) && ($timestamp - $leeway) >= $payload->exp) return false;
+        if(isset($payload->exp) && ($currentTime - $leeway) >= $payload->exp) return false;
 
         return $payload;
     }
@@ -222,9 +222,13 @@
 
 
     /** Creates a JWT
-     * @param Array $payload JSON object into which custom data can be stored. Spezial functional values are:
-     * "nbf": <UtcSec> to defined that token is valid after a (future) timestamp
-     * "
+     * @param Array $payload JSON object into which custom data can be stored. Typical (functional) values are:
+     * "nbf": <UtcSec> defines that JWT is only valid after a (future) timestamp
+     * "iat": <UtcSec> defines creation date of JWT
+     * "exp": <UtcSec> defines timestamp at which JWT becomes invalid
+     * "iss": <String> Issuer/Claim that issued the JWT
+     * "sub": <String> Subject of the JWT
+     * "aud": <String> Audience identifier the recipients that the JWT is intended for
      * @param String $secretKey Private key to sign JWT (if null then $_ENV['JWT_SECRET_KEY'])
      * @param String $alg Algorithm that should be used for signing (optional)
      * @param String $keyId ID of the key (optional)
@@ -243,18 +247,26 @@
 
     /** Loads the user session from a cookie
      * @param String $cookieName Name of the cookie in which the session is stored (default 'jwt')
-     * @param String $secretKey Private key to verify integrity of JWT (if null then $_ENV['JWT_SECRET_KEY'])
-     * @param Int $currentTime UTC timestamp in seconds (optional, can be used for unit tests)
+     * @param String $secretKey Private key to verify integrity of session data (if null then $_ENV['JWT_SECRET_KEY'])
+     * @param Int $currentTime Current UTC time seconds (optional, can be used for unit tests)
+     * @param Array $algorithms Map of allowed algorithms (optional, if null or empty then JWT_SUPPORTED_ALGORITHMS will be used)
      * @return Array containing loaded session values or empty array if no valid session
      */
-    function jwt_session_load($cookieName="jwt", $secretKey=null, $currentTime=null){
+    function jwt_session_load($cookieName="jwt", $secretKey=null, $currentTime=null, $algorithms=array()){
         if(!isset($_COOKIE[$cookieName])) return array();
-        return jwt_decode($_COOKIE[$cookieName]);
+        return jwt_decode($_COOKIE[$cookieName], $secretKey, $currentTime, $algorithms);
     }
 
 
     /** Stores/updates the session in a cookie
-     * @param Object $jsonObj JSON object containing the custom data that should be stored in the session (if null then $_SESSION will be used)
+     * @param Object $jsonObj JSON object containing the custom data that should be stored in the session (if null then $_SESSION will be used). 
+     * Typical (functional) values are:
+     * "nbf": <UtcSec> defines that JWT is only valid after a (future) timestamp
+     * "iat": <UtcSec> defines creation date of JWT
+     * "exp": <UtcSec> defines timestamp at which JWT becomes invalid
+     * "iss": <String> Issuer/Claim that issued the JWT
+     * "sub": <String> Subject of the JWT
+     * "aud": <String> Audience identifier the recipients that the JWT is intended for
      * @param String $cookieName Name of the cookie in which the session will be stored (default 'jwt')
      * @param Int $cookieExpire Expire seconds for how long the session should be valid (0 = until tab/browser gets closed, default '0')
      * @param Boolean $cookieSecure True if session should only be sent if HTTPs is used, if null then $_ENV['JWT_HTTPS_ONLY'] will be used (default null)
