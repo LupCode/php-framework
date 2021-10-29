@@ -66,11 +66,12 @@ Script that can be included and defines some functions to easily set HTTP header
 It is also used by the framework to set caching headers for CSS, JavaScript, images and downloads.
 
 #### `scripts/jwt-session.php`
-Script defines functions for working with JWT tokens and also defines some functions to use JWT tokens 
-as session instead of the default session_start() function. The advantage of a JWT session is that 
+Script defines functions for working with JWT tokens as well as some functions for a JWT session 
+instead of the default `session_start()` function. The advantage of a JWT session is that 
 it does store all information in the cookie and is therefore not dependend on the local storage of 
-the server (needed if multiple server instances are used). 
-If script is not wanted it can be safely deleted as it is not used by the actual framework.
+the server like the default PHP session (needed if multiple server instances are used). 
+If script is not wanted it can be safely deleted as it is not used by the actual framework. 
+**Important: ** First generate a random, long secret key and put it in the `.env` file for the variable `JWT_SECRET_KEY`!
 Example how to use the JWT session, further documentation inside the script file: 
 ```php
 require_once(SCRIPTS.'jwt-session.php'); // include script
