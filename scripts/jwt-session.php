@@ -277,9 +277,10 @@
         if(is_null($jsonObj)) $jsonObj = $_SESSION;
         $jwt = jwt_encode($jsonObj);
         if(!$jwt) return;
-        $cookieOptions['expires'] = $cookieExpire;
-        $cookieOptions['secure'] = is_null($cookieSecure) ? $_ENV['JWT_HTTPS_ONLY'] : $cookieSecure;
-        $cookieOptions['httponly'] = $cookieHttpOnly;
+        if(!isset($cookieOptions['expires'])) $cookieOptions['expires'] = $cookieExpire;
+        if(!isset($cookieOptions['secure'])) $cookieOptions['secure'] = is_null($cookieSecure) ? $_ENV['JWT_HTTPS_ONLY'] : $cookieSecure;
+        if(!isset($cookieOptions['httponly'])) $cookieOptions['httponly'] = $cookieHttpOnly;
+        if(!isset($cookieOptions['path']))$cookieOptions['path'] = "/";
         setcookie($cookieName, $jwt, $cookieOptions);
     }
 
@@ -289,6 +290,6 @@
      */
     function jwt_session_destroy($cookieName="jwt"){
         unset($_COOKIE[$cookieName]);
-        setcookie($cookieName, null, -1, '/');
+        setcookie($cookieName, "", time()-3600, '/');
     }
 ?>
