@@ -70,8 +70,8 @@ Script defines functions for working with JWT tokens as well as some functions f
 instead of the default `session_start()` function. The advantage of a JWT session is that 
 it does store all information in the cookie and is therefore not dependend on the local storage of 
 the server like the default PHP session (needed if multiple server instances are used). 
-If script is not wanted it can be safely deleted as it is not used by the actual framework. 
-**Important: ** First generate a random, long secret key and put it in the `.env` file for the variable `JWT_SECRET_KEY`!
+If script is not wanted it can be safely deleted as it is not used by the actual framework.  
+**Important:** First generate a random, long secret key and put it in the `.env` file for the variable `JWT_SECRET_KEY`!
 Example how to use the JWT session, further documentation inside the script file: 
 ```php
 require_once(SCRIPTS.'jwt-session.php'); // include script
