@@ -10,7 +10,8 @@
  */
 define('SITEMAP_URLS', array(
 
-	'start/' => array('1.0', 'yearly'),
+    '/' => array('1.0', 'yearly'),
+	'start/' => array('0.9', 'yearly'),
 
 ));
 
