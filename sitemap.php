@@ -10,7 +10,7 @@
  */
 define('SITEMAP_URLS', array(
 
-    '/' => array('1.0', 'yearly'),
+    '' => array('1.0', 'yearly'),       // for '/' page (includes 'de/', 'en/', ...)
 	'start/' => array('0.9', 'yearly'),
 
 ));
