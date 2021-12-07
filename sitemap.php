@@ -32,6 +32,7 @@ define('SITEMAP_CACHE_SECONDS', 3600); // 1 hour
 $sitemapFile = 'sitemap.xml';
 $fmt = file_exists($sitemapFile) ? filemtime($sitemapFile) : false; // last modified time of generated sitemap file
 if($fmt && (time() + SITEMAP_CACHE_SECONDS) < $fmt){ echo file_get_contents($sitemapFile); exit(); }
+$langs = array_merge(array(''), SUPPORTED_LANGUAGES);
 
 // newly generate sitemap
 $timeFormat = "Y-m-d\TH:i:sP";
@@ -41,8 +42,8 @@ $c = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sit
 foreach(SITEMAP_URLS as $path => $info){
     $absPath = VIEWS.$path; if(!file_exists($absPath)) continue; // skip non existing URLs
     $m = filemtime($absPath); $m = ($m ? date($timeFormat, $m) : $today);
-    foreach(SUPPORTED_LANGUAGES as $lang){
-        $c .= "\t<url>\n\t\t<loc>https://".$domain."/".$lang."/".$path."</loc>\n\t\t<lastmod>".$m."</lastmod>\n";
+    foreach($langs as $lang){
+        $c .= "\t<url>\n\t\t<loc>https://".$domain.PROJECT_ROOT.$lang.(empty($lang) ? '' : '/').$path."</loc>\n\t\t<lastmod>".$m."</lastmod>\n";
         $c .= "\t\t<priority>".$info[0]."</priority>\n\t\t<changefreq>".$info[1]."</changefreq>\n\t</url>\n";
     }
 }

@@ -36,8 +36,8 @@ e.g. all the native language names.
 Important is that the name of the JSON files should be the language code the file represents e.g. `en.json`, `zh-Hans.json`, etc.  
 Inside the text you can use PHP constants defined by this framework or in the `config.php` file by simply enclosing them in `%%` e.g. 
 `"Some text with a %%MY_CONSTANT%%"`. Variables cannot be referenced inside translations for security reasons.  
-Longer texts like legal notices you can but into separate files inside the `translations` directory and include 
-the content of a fiel using the following `<?php include(TRANSLATIONS.<pathInsideTranslationsDir>); ?>`
+Longer texts like legal notices can be put into separate files inside the `translations` directory and the file content can be included 
+using the following `<?php include(TRANSLATIONS.<pathInsideTranslationsDir>); ?>`
 
 #### `css-components/`
 You can put CSS files into the `css-components` directory, however they can not directly be called from an URL!  
@@ -141,6 +141,7 @@ that can be used for links
 * `ROOT_DEPTH` Integer how deep the requested file is including the language prefix e.g. `en/users/login/index.php` --> `3`
 * `SUPPORTED_LANGUAGES` Array with language codes that were found in the `translations/` directory
 * `$_ENV` Similar to `$_GET` but instead to retrieve to environment variables defined in the `.env` file
+* `PROJECT_ROOT` Path from the document root of the web server `$_SERVER['DOCUMENT_ROOT']` to the root of the project (just '/' if project/framework is directly in document root and not in a subdirectory). Used in scripts/metatags.php for alternate URLs
 
 ### Example files that can be deleted
 The framework also comes with some example files that can be deleted if wanted:

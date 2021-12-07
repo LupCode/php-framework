@@ -23,6 +23,6 @@
 <?php
 
     foreach(SUPPORTED_LANGUAGES as $lang)
-        echo '<link rel="alternate" href="https://'.$_SERVER['SERVER_NAME'].'/'.$lang.'/'.REQUEST.'" hreflang="'.$lang.'" />';
+        echo '<link rel="alternate" href="https://'.$_SERVER['SERVER_NAME'].PROJECT_ROOT.$lang.'/'.REQUEST.'" hreflang="'.$lang.'" />';
 
 ?>
