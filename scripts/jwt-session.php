@@ -143,14 +143,14 @@
         $algorithms = !empty($algorithms) ? (is_array($algorithms) ? $algorithms : array($algorithms)) : JWT_SUPPORTED_ALGORITHMS;
 
         $parts = explode(".", $jwt);
-        if(count($parts) != 3) return array();
+        if(count($parts) != 3) return new stdClass();
 
         list($head64, $payload64, $sig64) = $parts;
         if(!($header = _jwt_decode($head64)) || !($payload = _jwt_decode($payload64)) || !($sig = _jwt_decode($sig64, false)))
-            return array();
+            return new stdClass();
 
         if(empty($header->alg) || !isset($algorithms[$header->alg]))
-            return array();
+            return new stdClass();
         
         if ($header->alg === 'ES256' || $header->alg === 'ES384') {
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES384 signatures
@@ -163,7 +163,7 @@
         }
 
         // Check the signature
-        if(!jwt_verify($head64.".".$payload64, $sig, $secretKey, $header->alg)) return array();
+        if(!jwt_verify($head64.".".$payload64, $sig, $secretKey, $header->alg)) return new stdClass();
 
         // Check if token can already be used (if set)
         $leeway = isset($_ENV['JWT_LEEWAY_SEC']) ? intval($_ENV['JWT_LEEWAY_SEC']) : 0;
@@ -250,10 +250,10 @@
      * @param String $secretKey Private key to verify integrity of session data (if null then $_ENV['JWT_SECRET_KEY'])
      * @param Int $currentTime Current UTC time seconds (optional, can be used for unit tests)
      * @param Array $algorithms Map of allowed algorithms (optional, if null or empty then JWT_SUPPORTED_ALGORITHMS will be used)
-     * @return Array containing loaded session values or empty array if no valid session
+     * @return Object JSON object containing loaded session values or empty object if no valid session
      */
     function jwt_session_load($cookieName="jwt", $secretKey=null, $currentTime=null, $algorithms=array()){
-        if(!isset($_COOKIE[$cookieName])) return array();
+        if(!isset($_COOKIE[$cookieName])) return new stdClass();
         return jwt_decode($_COOKIE[$cookieName], $secretKey, $currentTime, $algorithms);
     }
 
