@@ -274,7 +274,7 @@
      * @param Array $cookieOptions Other cookie options that should be set like 'path', 'domain', 'samesite', etc. (optional)
      */
     function jwt_session_store($jsonObj=null, $cookieName="jwt", $cookieExpire=0, $cookieSecure=null, $cookieHttpOnly=true, $cookieOptions=array()){
-        if(is_null($jsonObj)) $jsonObj = $_SESSION;
+        if(is_null($jsonObj)) $jsonObj = isset($_SESSION) ? $_SESSION : new stdClass();
         $jwt = jwt_encode($jsonObj);
         if(!$jwt) return;
         if(!isset($cookieOptions['expires'])) $cookieOptions['expires'] = $cookieExpire;
