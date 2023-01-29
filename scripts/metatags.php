@@ -22,7 +22,13 @@
 <meta http-equiv="content-language" content="<?php echo LANGUAGE_CODE; ?>">
 <?php
 
-    foreach(SUPPORTED_LANGUAGES as $lang)
-        echo '<link rel="alternate" href="https://'.$_SERVER['SERVER_NAME'].PROJECT_ROOT.$lang.'/'.REQUEST.'" hreflang="'.$lang.'" />';
+    echo '<link rel="canonical" href="https://'.DOMAIN.PROJECT_ROOT.LANGUAGE_CODE.'/'.REQUEST.'" />';
 
+    foreach(SUPPORTED_LANGUAGES as $lang)
+        echo '<link rel="alternate" href="https://'.DOMAIN.PROJECT_ROOT.$lang.'/'.REQUEST.'" hreflang="'.$lang.'" />';
+
+    foreach(scandir(STATICS.'css/fonts/') as $fontFile){
+        if($fontFile[0] === '.') continue; // ignore files starting with '.'
+        echo '<link rel="preload" as="font" href="'.CSS.'fonts/'.$fontFile.'">';
+    }
 ?>

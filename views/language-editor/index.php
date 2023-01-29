@@ -125,7 +125,7 @@ echo '</script>';
         if(form) form.reset();
     }
 </script>
-<html>
+<html lang="<?php echo LANGUAGE_CODE; ?>">
     <head>
         <title>Language Editor - PHP Framework by LupCode</title>
         <?php include(SCRIPTS.'metatags.php'); ?>

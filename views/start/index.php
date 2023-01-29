@@ -4,7 +4,7 @@ require_once(SCRIPTS.'caching.php');
 noCache();
 
 ?><!DOCTYPE html>
-<html>
+<html lang="<?php echo LANGUAGE_CODE; ?>">
     <head>
         <title><?php echo TEXT['pageTitleStart']; ?></title>
         <?php include(SCRIPTS.'metatags.php'); ?>
