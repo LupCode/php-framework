@@ -15,7 +15,7 @@
     "Text": "Text",
     "languageName": "English",
     "pageDescriptionError": "The requested URL was not found",
-    "pageDescriptionStart": "Example start page of this framework developed by %%NAME%%",
+    "pageDescriptionStart": "Example start page created with this framework",
     "pageTitleLanguageEditor": "Language Editor - PHP Framework by LupCode",
     "pageTitleStart": "PHP-Framework by %%NAME%%"
 }

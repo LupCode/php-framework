@@ -99,6 +99,13 @@ define('FILE_EXTENSION_TO_MIME', array(
 define('TRANSLATION_CONSTANT_ESCAPE', '%%');
 
 
+/** Path used in dev mode for sending updates to client */
+define('DEV_SSE_URI', '.LUP');
+
+/** Interval in milliseconds for checking file system for changes */
+define('DEV_CHECK_FILE_CHANGES', 500);
+
+
 // ---------------------------------------------------------------------------------------
 // INTERAL PROCESSING OF REQUESTS
 // ---------------------------------------------------------------------------------------
@@ -193,6 +200,28 @@ if($useLangCookie) setcookie(LANGUAGE_COOKIE_NAME, LANGUAGE_CODE, (LANGUAGE_COOK
 $langLen = strlen(LANGUAGE_CODE);
 define('REQUEST', ($fullRequestLen < $langLen || strtolower(substr(FULL_REQUEST, 0, $langLen)) != $lang) ? FULL_REQUEST : substr(FULL_REQUEST, $langLen+1));
 
+/** Load environment variables */
+function reloadEnv(){
+	unset($_ENV);
+	if(($handle = fopen(ENVIRONMENT_FILE, "r"))){
+		while(($line = fgets($handle)) !== false){
+			$idx = strpos($line, "=");
+			if($idx < 0) continue;
+			$k = trim(substr($line, 0, $idx));
+			if(empty($k) || $k[0] === '#') continue;
+			$v = trim(substr($line, $idx+1));
+			$_ENV[$k] = $v;
+			putenv($k.'='.$v);
+		}
+		fclose($handle);
+	}
+}
+
+/** Returns true if server runs in development mode, otherwise false */
+function isDevMode(){
+	return isset($_ENV['DEV']) && (empty($_ENV['DEV']) || $_ENV['DEV'] === '1' || strtolower($_ENV['DEV']) === 'true');
+}
+
 /**
  * Function takes the path of a file from framework root, sets appropiate headers, 
  * echos the contents of the file and exits the execution of the script. 
@@ -200,6 +229,66 @@ define('REQUEST', ($fullRequestLen < $langLen || strtolower(substr(FULL_REQUEST,
  * @param String $file Path to the file
  */
 function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false, $prefix=false){
+
+	// dev mode SSE
+	if($file === VIEWS.DEV_SSE_URI){
+		reloadEnv();
+		if(isDevMode()){
+			header('Content-Type: text/event-stream');
+			header('Cache-Control: no-cache');
+			header('Connection: Keep-Alive');
+			
+			function initFiles($files=array(), $prefix=''){
+				$result = array();
+				foreach($files as $file){
+					if($file === '.' || $file === '..') continue;
+					$fullFile = $prefix.$file;
+					if(is_dir($fullFile))
+						array_push($result, ...initFiles(scandir($fullFile), $fullFile.'/'));
+					else
+						array_push($result, $fullFile.':'.filemtime($fullFile));
+				}
+				return $result;
+			}
+			$FILES = initFiles(scandir('.'));
+			$FILES_LEN = count($FILES);
+
+			/** Returns count of found files or -1 if file has changed */
+			function checkFiles($FILES=array(), $files=array(), $prefix=''){
+				$count = 0;
+				foreach($files as $file){
+					if($file === '.' || $file === '..') continue;
+					$fullFile = $prefix.$file;
+					if(is_dir($fullFile)){
+						$found = checkFiles($FILES, scandir($fullFile), $fullFile.'/');
+						if($found === -1) return -1;
+						$count = $count + $found;
+					} else if(in_array($fullFile.':'.filemtime($fullFile), $FILES)){
+						$count = $count + 1;
+					} else {
+						echo $fullFile.':'.filemtime($fullFile).'<br />';
+						return -1;
+					}
+				}
+				return $count;
+			}
+
+			while(!connection_aborted()){
+				usleep(DEV_CHECK_FILE_CHANGES);
+				if(checkFiles($FILES, scandir('.')) !== $FILES_LEN){
+					echo "event: message\n";
+					echo "data: {\"reload\": true}";
+					echo "\n\n";
+					ob_end_flush();
+					flush();
+					$FILES = initFiles(scandir('.'));
+					$FILES_LEN = count($FILES);
+				}
+			}
+			exit(0);
+		}
+	}
+
 	// safety checks
 	$realFile = ($file ? realpath($file) : ''); $realRoot = realpath(__DIR__);
 	if(!$file || !file_exists($file) || strlen($realFile) < strlen($realRoot) || !str_starts_with($realFile, $realRoot)){
@@ -249,21 +338,11 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 		define('ROOT', BASE.(ROOT_DEPTH != BASE_DEPTH ? '../' : ''));
 		foreach(scandir(STATICS) as $dir) if(is_dir(STATICS.$dir)) define(strtoupper($dir), ROOT.$dir.'/');
 
-		// Load environment variables
-		if(($handle = fopen(ENVIRONMENT_FILE, "r"))){
-			while(($line = fgets($handle)) !== false){
-				$idx = strpos($line, "=");
-				if($idx < 0) continue;
-				$k = trim(substr($line, 0, $idx));
-				if(empty($k) || $k[0] === '#') continue;
-				$v = trim(substr($line, $idx+1));
-				$_ENV[$k] = $v;
-				putenv($k.'='.$v);
-			}
-			fclose($handle);
-		}
+		reloadEnv();
 
 		include('config.php');
+
+		$IS_DEV = isDevMode();
 
 		function replaceVariables($str){
 			$val = ""; $start = -1; $end = 0;
@@ -295,6 +374,12 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 		define('TEXT', $arr);
 
 		include($file);
+		if($IS_DEV)
+			foreach(headers_list() as $header)
+				if(strpos($header, 'text/html') !== false){
+					echo '<script type="text/javascript">(function(){const es=new EventSource("'.ROOT.DEV_SSE_URI.'");es.addEventListener("message",function(event){console.log(event.data);if(JSON.parse(event.data).reload)window.location.reload(true);});})();</script>';
+					break;
+				}
 		exit(0);
 	}
 
@@ -312,7 +397,8 @@ foreach(scandir(STATICS) as $dir){
 		if(isset(STATICS_CACHE_SECONDS[$dir])){
 			require_once(SCRIPTS.'caching.php');
 			$cacheSec = STATICS_CACHE_SECONDS[$dir];
-			if($cacheSec >= 0) setCache($cacheSec); else noCache();
+			reloadEnv();
+			if($cacheSec >= 0 && !isDevMode()) setCache($cacheSec); else noCache();
 		}
 		if($dir === _CSS) include(CSS_COMPONENTS.'css-config.php');
 		if($dir === _JS) include(JS_COMPONENTS.'js-config.php');

@@ -2,7 +2,7 @@
     "languageName": "Deutsch",
     "pageTitleStart": "PHP-Framework von  %%NAME%%",
     "pageDescriptionError": "Die angeforderte Resource konnte nicht gefunden werden",
-    "pageDescriptionStart": "Beispiel-Startseite dieses von  %%NAME%% entwickelten Frameworks",
+    "pageDescriptionStart": "Beispiel Startseite erstellt mit diesem Frameworks",
 
     "pageTitleLanguageEditor": "Spracheditor - PHP Framework von LupCode",
     "Cancel": "Abbruch",
