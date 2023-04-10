@@ -274,7 +274,7 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 			}
 
 			while(!connection_aborted()){
-				usleep(DEV_CHECK_FILE_CHANGES);
+				usleep(DEV_CHECK_FILE_CHANGES*1000);
 				if(checkFiles($FILES, scandir('.')) !== $FILES_LEN){
 					echo "event: message\n";
 					echo "data: {\"reload\": true}";

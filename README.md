@@ -159,3 +159,13 @@ The framework also comes with some example files that can be deleted if wanted:
 * `views/index.php` Redirects to the example start page
 * `views/manifest.json` File used by browsers to get metadata about the website
 * `views/robots.txt` Inside of this file you can declare URLs that should not be crawled and indexed by search engines
+
+
+## How to deploy
+For deployment in production mode following points should be checked:
+* The environmental variable `DEV` must not be present or at least set to `false`. Check file `.env`.
+* Proper caching should be set in every PHP file inside the view directory (you can use `scripts/caching.php`).
+* In `sitemap.php` all important URIs should be defined.
+* In the root `index.php` check following settings:
+  * `HTTPS_REDIRECT` should be set to `true`.
+  * `STATICS_CACHE_SECONDS` should have proper caching values set.
