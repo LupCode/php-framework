@@ -412,7 +412,10 @@ if(FULL_REQUEST === 'favicon.ico') respondWithFile((FAVICON_FILE && !empty(FAVIC
 
 
 // process sitemap.xml
-if(FULL_REQUEST === 'sitemap.xml') include('sitemap.php');
+if(FULL_REQUEST === 'sitemap.xml'){
+	respondWithFile('sitemap.php'); // in root
+	return;
+}
 
 
 // all other files including PHP files
