@@ -41,6 +41,12 @@ define('PREFIX_FALLBACKS', array(
 define('HTTPS_REDIRECT', true);
 
 
+/**
+ * If true the framework will remove the 'www.' prefix from the domain name by redirecting to the domain without 'www.'.
+ */
+define('WWW_REDIRECT', true);
+
+
 // Cookie settings for remembering users language
 define('LANGUAGE_COOKIE_NAME', 'L'); // name of cookie to store users last visited language (empty or false to disable)
 define('LANGUAGE_COOKIE_EXPIRE_SEC', 5184000); // 60 days
@@ -110,13 +116,20 @@ define('DEV_CHECK_FILE_CHANGES', 500);
 // INTERAL PROCESSING OF REQUESTS
 // ---------------------------------------------------------------------------------------
 
+$IS_HTTPS = (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ||
+			(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https' || 
+			!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower($_SERVER['HTTP_X_FORWARDED_SSL']) !== 'off');
+
+// check if www. prefix should be removed
+if(WWW_REDIRECT && str_starts_with($_SERVER['SERVER_NAME'], 'www.') && empty($_POST)){
+	header("Location: ".(($IS_HTTPS || HTTPS_REDIRECT) ? 'https' : 'http').
+					"://".substr($_SERVER['SERVER_NAME'], 4).$_SERVER['REQUEST_URI'].(empty($_SERVER['QUERY_STRING']) ? '' : '?'.$_SERVER['QUERY_STRING']));
+	exit(0);
+}
+
 // check if redirect to https is needed
-if(HTTPS_REDIRECT && $_SERVER['REMOTE_ADDR'] !== "127.0.0.1" && $_SERVER['REMOTE_ADDR'] !== "::1" && !(
-	(isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ||
-	(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https' || 
-		!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower($_SERVER['HTTP_X_FORWARDED_SSL']) !== 'off')
-)){
-	header("Location: https://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);
+if(HTTPS_REDIRECT && $_SERVER['REMOTE_ADDR'] !== "127.0.0.1" && $_SERVER['REMOTE_ADDR'] !== "::1" && !$IS_HTTPS && empty($_POST)){
+	header("Location: https://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].(empty($_SERVER['QUERY_STRING']) ? '' : '?'.$_SERVER['QUERY_STRING']));
 	exit(0);
 }
 
