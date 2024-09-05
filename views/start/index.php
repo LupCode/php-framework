@@ -15,6 +15,7 @@ noCache();
             
             echo '<meta name="description" content="'.TEXT['pageDescriptionStart'].'">';
         ?>
+        <link rel="canonical" href="<?php echo 'https://'.$_SERVER['SERVER_NAME'].'/'.LANGUAGE_CODE.'/'.REQUEST; ?>">
 
         <!-- 
             'echo CSS' is the relative path to the 'static/css/' directory. 
