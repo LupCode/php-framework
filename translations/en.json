@@ -1,4 +1,15 @@
 {
+    "languageName": "English",
+    
+    "pageErrorTitle": "Error",
+    "pageErrorDescription": "The requested resource could not be found",
+
+    "pageLanguageEditorTitle": "Language Editor - PHP Framework by LupCode",
+
+    "pageStartTitle": "PHP-Framework by %%NAME%%",
+    "pageStartDescription": "Example start page created with this framework",
+    
+    
     "Cancel": "Cancel",
     "Create": "Create",
     "CreateNewLanguage": "Create new language",
@@ -9,13 +20,8 @@
     "NewLanguageCode": "New language code",
     "NotSavedYet": "Not saved yet!",
     "Save": "Save",
-    "SelectLanguageAndEditText": "Select a language and edit the text fields. Don't forget to click on 'save'",
     "SelectedLanguage": "Selected Language",
+    "SelectLanguageAndEditText": "Select a language and edit the text fields. Don't forget to click on 'save'",
     "SomeFileSomethingMissing": "In some file(s) is something missing",
-    "Text": "Text",
-    "languageName": "English",
-    "pageDescriptionError": "The requested URL was not found",
-    "pageDescriptionStart": "Example start page created with this framework",
-    "pageTitleLanguageEditor": "Language Editor - PHP Framework by LupCode",
-    "pageTitleStart": "PHP-Framework by %%NAME%%"
+    "Text": "Text"
 }

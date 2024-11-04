@@ -127,7 +127,7 @@ echo '</script>';
 </script>
 <html lang="<?php echo LANGUAGE_CODE; ?>">
     <head>
-        <title>Language Editor - PHP Framework by LupCode</title>
+        <title><?php echo TEXT['pageLanguageEditorTitle']; ?></title>
         <?php include(SCRIPTS.'metatags.php'); ?>
         <meta name="robots" content="noindex">
     </head>

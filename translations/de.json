@@ -1,10 +1,15 @@
 {
     "languageName": "Deutsch",
-    "pageTitleStart": "PHP-Framework von  %%NAME%%",
-    "pageDescriptionError": "Die angeforderte Resource konnte nicht gefunden werden",
-    "pageDescriptionStart": "Beispiel Startseite erstellt mit diesem Frameworks",
 
-    "pageTitleLanguageEditor": "Spracheditor - PHP Framework von LupCode",
+    "pageErrorTitle": "Fehler",
+    "pageErrorDescription": "Die angeforderte Resource konnte nicht gefunden werden",
+
+    "pageLanguageEditorTitle": "Spracheditor - PHP Framework von LupCode",
+
+    "pageStartTitle": "PHP-Framework von  %%NAME%%",
+    "pageStartDescription": "Beispiel Startseite erstellt mit diesem Frameworks",
+
+    
     "Cancel": "Abbruch",
     "Create": "Erstellen",
     "CreateNewLanguage": "Neue Sprache erstellen",

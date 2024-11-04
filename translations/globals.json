@@ -1,6 +1,7 @@
 {
     "languageNameDE": "Deutsch",
     "languageNameEN": "English",
-    "pageKeywordsStartDE": "Start,Framework,PHP,%%NAME%%",
-    "pageKeywordsStartEN": "Start,Framework,PHP,%%NAME%%"
+
+    "pageStartKeywordsDE": "Start,Framework,PHP,%%NAME%%",
+    "pageStartKeywordsEN": "Start,Framework,PHP,%%NAME%%"
 }

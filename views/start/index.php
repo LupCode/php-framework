@@ -6,14 +6,14 @@ noCache();
 ?><!DOCTYPE html>
 <html lang="<?php echo LANGUAGE_CODE; ?>">
     <head>
-        <title><?php echo TEXT['pageTitleStart']; ?></title>
+        <title><?php echo TEXT['pageStartTitle']; ?></title>
         <?php include(SCRIPTS.'metatags.php'); ?>
 
         <?php
             foreach(SUPPORTED_LANGUAGES as $lang)
-                echo '<meta name="keywords" lang="'.$lang.'" content="'.TEXT['pageKeywordsStart'.strtoupper($lang)].'">';
+                echo '<meta name="keywords" lang="'.$lang.'" content="'.TEXT['pageStartKeywords'.strtoupper($lang)].'">';
             
-            echo '<meta name="description" content="'.TEXT['pageDescriptionStart'].'">';
+            echo '<meta name="description" content="'.TEXT['pageStartDescription'].'">';
         ?>
         <link rel="canonical" href="<?php echo 'https://'.$_SERVER['SERVER_NAME'].'/'.LANGUAGE_CODE.'/'.REQUEST; ?>">
 
@@ -37,10 +37,10 @@ noCache();
                 <a class="nodrag noselect" target="_blank" href="https://php.net">
                     <img src="<?php echo IMAGES; ?>favicons/favicon.svg" dragable="false" width="35" height="35" alt="PHP"></img>
                 </a>
-                <h1 class="noselect nodrag"><?php echo TEXT['pageTitleStart']; ?></h1>
+                <h1 class="noselect nodrag"><?php echo TEXT['pageStartTitle']; ?></h1>
                 <div></div>
             </header>
-            <div class="main">
+            <main class="main">
                 <?php
                     
                     // Example for PREFIX_FALLBACKS. Every URI that starts with 'start/' will also trigger this page
@@ -50,9 +50,9 @@ noCache();
                         echo '<a href="'.REQUEST_PREFIX_BASE.($num+1).'"><h2>&gt; '.$num.' &lt;</h2></a>';
                     }
                 ?>
-                <p><?php echo TEXT['pageDescriptionStart']; ?></p>
+                <p><?php echo TEXT['pageStartDescription']; ?></p>
                 <a class="nodrag" target="_blank" href="https://github.com/LupCode/php-framework">GitHub Repository</a>
-            </div>
+            </main>
             <footer>
                 <a class="noselect nodrag" target="_blank" href="https://lupcode.com"><?php echo NAME; ?></a>
                 <a href="<?php echo BASE; ?>start/1"><?php echo TEXT['ExampleCounter']; ?></a>
