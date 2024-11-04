@@ -397,7 +397,13 @@ function respondWithFile($file, $isAlreadyNotFound=false, $isInsideStatics=false
 	}
 
 	// return contents of file
-	header('Content-Type: '.file_to_mime($file));
+	$mimeType = file_to_mime($file);
+	header('Content-Type: '.$mimeType);
+	if($mimeType === 'video/quicktime' || $mimeType === 'video/mp4' || $mimeType === 'video/x-m4v' || $mimeType === 'video/3gpp'){
+		// video files
+		header('Content-Length: '.filesize($file));
+		header('Accept-Ranges: bytes');
+	}
 	echo file_get_contents($file);
 	exit(0);
 }
